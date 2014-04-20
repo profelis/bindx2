@@ -1,0 +1,14 @@
+bin/
+dump/
+out/
+target/
+
+*.hxproj
+.idea
+*.iml
+*.ipr
+*.sublime-project
+*.sublime-workspace
+
+.DS_Store
+Thumbs.db
