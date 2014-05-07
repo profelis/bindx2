@@ -1,5 +1,5 @@
 -main Tests
 -cp src
 -cp test
--neko bin/bind.n
+-swf bin/bind.swf
 -D dump=pretty

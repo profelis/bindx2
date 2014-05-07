@@ -1,5 +1,6 @@
 package bindx;
 
+#if macro
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -67,3 +68,5 @@ class ExprMetaUtils {
 	static public inline function isNullOrTrue(expr:Expr):Bool
 		return expr == null || isTrue(expr);
 }
+
+#end
