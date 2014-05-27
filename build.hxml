@@ -1,0 +1,17 @@
+-main Tests
+-cp src
+-cp test
+-D dump=pretty
+--each
+
+--next
+-swf bin/bind.swf
+
+--next
+-java bin/java
+
+--next
+-neko bin/neko.n
+
+--next
+-cs bin/cs

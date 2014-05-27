@@ -1,5 +1,0 @@
--main Tests
--cp src
--cp test
--swf bin/bind.swf
--D dump=pretty
