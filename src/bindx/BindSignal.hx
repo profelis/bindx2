@@ -187,10 +187,9 @@ class Signal<T> {
     }
 
     public function add(listener:T):Void {
-        if (listeners.indexOf(listener) == -1) {
-            checkLock();
-            listeners.push(listener);
-        }
+        var pos = listeners.indexOf(listener);
+        if (pos == -1) checkLock(); else listeners.splice(pos, 1);
+        listeners.push(listener);
     }
 
     public function remove(listener:T):Void {
