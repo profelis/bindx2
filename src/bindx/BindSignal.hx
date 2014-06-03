@@ -43,7 +43,7 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getFieldChangedExpr(field:Field, oldValue:Expr, newValue:Expr):Expr {
         var args = switch (field.kind) { case FFun(_): []; case _: [oldValue, newValue]; }
-        return dispatchSignal(macro this, field.name, hasLazy(field.bindableMeta()), args);
+        return dispatchSignal(macro this, field.name, args, hasLazy(field.bindableMeta()));
     }
 
     public function getClassFieldBindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
@@ -80,7 +80,7 @@ class BindSignalProvider implements IBindingSignalProvider {
             case FMethod(_): [];
            case FVar(_, _): [oldValue, newValue];
         }
-        return dispatchSignal(expr, field.name, hasLazy(field.bindableMeta()), args);
+        return dispatchSignal(expr, field.name, args, hasLazy(field.bindableMeta()));
     }
 
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>) {
@@ -131,7 +131,7 @@ class BindSignalProvider implements IBindingSignalProvider {
         }
     }
 
-    inline function dispatchSignal(expr:Expr, fieldName:String, lazy:Bool, args:Array<Expr>) {
+    inline function dispatchSignal(expr:Expr, fieldName:String, args:Array<Expr>, lazy:Bool) {
         return 
             if (lazy) {
                 var signalPrivateName = signalPrivateName(fieldName);
