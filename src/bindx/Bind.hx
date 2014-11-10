@@ -65,7 +65,7 @@ class Bind {
 	public static function checkField(field:Expr):{e:Expr, field:ClassField} {
 		switch (field.expr) {
 			case EField(e, field):
-				var classType = Context.typeof(e).getClass();
+				var classType = Context.typeof(e).follow().getClass();
 				if (classType == null || !isBindable(classType)) {
 					Context.error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
 					return null;

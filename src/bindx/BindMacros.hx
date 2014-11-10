@@ -94,18 +94,18 @@ class BindMacros {
                     Context.warning('$INLINE_SETTER ignored. Setter already exist', inlineSetter.pos);
                 var fieldName = field.name;
                 var setter = fields.find(function (it) return it.name == 'set_$fieldName');
-                if (setter == null) return;
-                switch (setter.kind) {
-                    case FFun(func):
-                        patchField = field;
-                        func.expr = macro {
-                            var $OLD_VALUE = this.$fieldName;
-                            if ($i{OLD_VALUE} == $i{func.args[0].name}) return $i{OLD_VALUE};
-                            $e{func.expr.map(patchSetter)};
-                        };
-                        patchField = null;
-                    case _:
-
+                if (setter != null) {
+                    switch (setter.kind) {
+                        case FFun(func):
+                            patchField = field;
+                            func.expr = macro {
+                                var $OLD_VALUE = this.$fieldName;
+                                if ($i{OLD_VALUE} == $i{func.args[0].name}) return $i{OLD_VALUE};
+                                $e{func.expr.map(patchSetter)};
+                            };
+                            patchField = null;
+                        case _:
+                    }
                 }
     			res.push(field);
 

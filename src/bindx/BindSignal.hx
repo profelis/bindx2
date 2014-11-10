@@ -63,8 +63,9 @@ class BindSignalProvider implements IBindingSignalProvider {
                     function __unbind__() $expr.$signalName.remove(listener);
                 }
             case FVar(_, _):
+                var type = field.type.follow().toComplexType();
                 macro {
-                    var listener = function (from, to) $target = to;
+                    var listener = function (from:$type, to:$type) $target = to;
                     $expr.$signalName.add(listener);
                     function __unbind__() $expr.$signalName.remove(listener);
                 }
@@ -89,7 +90,7 @@ class BindSignalProvider implements IBindingSignalProvider {
     
     public function getDisposeBindingsExpr(expr:ExprOf<IBindable>, type:Type):Expr {
         return macro {
-            var meta = haxe.rtti.Meta.getFields($p{type.toString().split(".")});
+            var meta = haxe.rtti.Meta.getFields(std.Type.getClass($expr));
             if (meta != null) for (m in std.Reflect.fields(meta)) {
                 var data:Dynamic<String> = std.Reflect.field(meta, m);
                 if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
@@ -127,7 +128,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 }
                 return $i{signalPrivateName};
             };
-            var getterAccess = [];
+            var getterAccess = [APrivate];
             if (inlineSignalGetter.isNotNullAndTrue()) getterAccess.push(AInline);
 
             res.push({

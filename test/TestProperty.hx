@@ -31,6 +31,15 @@ class TestProperty extends haxe.unit.TestCase {
 
 		assertEquals(callNum, 2);
 	}
+	
+	function test2() {
+		var p = new BindableProperty();
+		var t = {a:""};
+		Bind.bindTo(p.s, t.a);
+		
+		p.s = "123";
+		assertEquals(t.a, p.s);
+	}
 }
 
 class BindableProperty implements bindx.IBindable {
