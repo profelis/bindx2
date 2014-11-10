@@ -15,28 +15,28 @@ using Lambda;
 class Bind {
 
 	@:noUsing macro static public function bind(field:Expr, listener:Expr):Expr {
-		return _bind(field, listener, true);
+		return internalBind(field, listener, true);
 	}
 
 	@:noUsing macro static public function bindTo(field:Expr, target:Expr):Expr {
-		return _bindTo(field, target);
+		return internalBindTo(field, target);
 	}
 
 	@:noUsing macro static public function unbind(field:Expr, ?listener:Expr):Expr {
-		return _bind(field, listener, false);
+		return internalBind(field, listener, false);
 	}
 
 	@:noUsing macro static public function notify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
-		return _notify(field, oldValue, newValue);
+		return internalNotify(field, oldValue, newValue);
 	}
     
     @:noUsing macro static public function disposeBindings(object:ExprOf<IBindable>):Expr {
-        return _disposeBindings(object);
+        return internalDisposeBindings(object);
 	}
 
 	#if macro
 
-	static function _bind(field:Expr, listener:Expr, doBind:Bool):Expr {
+	public static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
 		var fieldData = checkField(field);
 		return if (fieldData != null) {
 			if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
@@ -44,17 +44,17 @@ class Bind {
 		} else macro {};
 	}
 
-	static function _bindTo(field:Expr, target:Expr):Expr {
+	public static function internalBindTo(field:Expr, target:Expr):Expr {
 		var fieldData = checkField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
 	}
 
-	static function _notify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
+	public static function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
 		var fieldData = checkField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
 
-	static function _disposeBindings(object:ExprOf<IBindable>):Expr {
+	public static function internalDisposeBindings(object:ExprOf<IBindable>):Expr {
         var type = Context.typeof(object).follow();
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
@@ -62,7 +62,7 @@ class Bind {
 		return BindMacros.bindingSignalProvider.getDisposeBindingsExpr(object, type);
 	}
 
-	static function checkField(field:Expr):{e:Expr, field:ClassField} {
+	public static function checkField(field:Expr):{e:Expr, field:ClassField} {
 		switch (field.expr) {
 			case EField(e, field):
 				var classType = Context.typeof(e).getClass();
@@ -92,11 +92,8 @@ class Bind {
 		}
 		return null;
 	}
-
-	static var IBindableType = macro : bindx.IBindable;
-
-	static function isBindable(classType:ClassType) {
-
+	
+	public static function isBindable(classType:ClassType):Bool {
 		var t = classType;
 		while (t != null) {
 			for (it in t.interfaces) {

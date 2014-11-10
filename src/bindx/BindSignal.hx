@@ -1,5 +1,7 @@
 package bindx;
 
+#if macro
+
 import bindx.BindSignal.BindSignalProvider;
 import bindx.BindSignal.Signal;
 import haxe.macro.Expr;
@@ -12,8 +14,6 @@ using haxe.macro.Tools;
 using Lambda;
 
 class BindSignalProvider implements IBindingSignalProvider {
-
-    #if macro
 
     static inline var SIGNAL_POSTFIX = "Changed";
 
@@ -166,8 +166,9 @@ class BindSignalProvider implements IBindingSignalProvider {
     @:expose inline function hasLazy(meta:MetadataEntry) {
         return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
     }
-    #end
 }
+
+#end
 
 class MethodSignal extends Signal<Void -> Void> {
 
