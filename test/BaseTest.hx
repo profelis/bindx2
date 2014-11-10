@@ -1,6 +1,7 @@
 package ;
 
 import bindx.Bind;
+import bindx.Bind.bind in bind;
 import haxe.unit.TestCase;
 
 class BaseTest extends TestCase {
@@ -13,13 +14,13 @@ class BaseTest extends TestCase {
 		var b = new Bindable1();
 		b.str = "a";
 		var callNum = 0;
-        Bind.bind(b.str, function (from, to) {
+        bind(b.str, function (from, to) {
 			assertEquals(from, "a");
 			assertEquals(to, "b");
 			callNum ++;
 		});
 
-		bindx.Bind.bind(b.str, function (from, to) {
+		bind(b.str, function (from, to) {
 			assertEquals(from, "a");
 			assertEquals(to, "b");
 			callNum ++;
@@ -38,12 +39,12 @@ class BaseTest extends TestCase {
 			callNum ++;
 		}
 
-		bindx.Bind.bind(b.str, listener);
-		bindx.Bind.bind(b.str, listener);
+		bind(b.str, listener);
+		bind(b.str, listener);
 		b.str = "";
 		assertEquals(callNum, 1);
 
-		bindx.Bind.bind(b.str, listener);
+		Bind.bind(b.str, listener);
 		bindx.Bind.unbind(b.str, listener);
 		b.str = "1";
 		assertEquals(callNum, 1);
@@ -54,12 +55,12 @@ class BaseTest extends TestCase {
 		b.str = null;
 		var callNum = 0;
 
-		bindx.Bind.bind(b.str, function (_, _) callNum++);
-		bindx.Bind.bind(b.str, function (_, _) callNum++);
+		bind(b.str, function (_, _) callNum++);
+		bind(b.str, function (_, _) callNum++);
 		b.str = "";
 		assertEquals(callNum, 2);
 
-        bindx.Bind.unbind(b.str);
+        Bind.unbind(b.str);
 		b.str = "1";
 		assertEquals(callNum, 2);
         
@@ -84,10 +85,10 @@ class BaseTest extends TestCase {
 		}
         
 		Bind.bind(b.str, listener);
-		bindx.Bind.notify(b.str, "1", "2");
+		Bind.notify(b.str, "1", "2");
 		assertEquals(callNum, 1);
 
-		bindx.Bind.notify(b.str, "1", "2");
+		Bind.notify(b.str, "1", "2");
 		assertEquals(callNum, 2);
 	}
 
@@ -101,7 +102,7 @@ class BaseTest extends TestCase {
 		assertEquals(callNum, 1);
 		assertFalse(Reflect.hasField(b, "noBindChanged"));
 
-		bindx.Bind.notify(b.bind);
+		Bind.notify(b.bind);
 		assertEquals(callNum, 2);
 	}
 }
