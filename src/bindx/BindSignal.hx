@@ -1,17 +1,17 @@
 package bindx;
 
+import bindx.BindSignal.BindSignalProvider;
+import bindx.BindSignal.Signal;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
+import haxe.rtti.Meta;
 
 using bindx.MetaUtils;
+using haxe.macro.Tools;
+using Lambda;
 
 class BindSignalProvider implements IBindingSignalProvider {
-
-    macro static public function register() {
-        bindx.BindMacros.setBindingSignalProvider(new BindSignalProvider());
-        return macro {};
-    }
 
     #if macro
 
@@ -25,6 +25,7 @@ class BindSignalProvider implements IBindingSignalProvider {
      * default value: false
      */
     static inline var INLINE_SIGNAL_GETTER = "inlineSignalGetter";
+    static inline var BIND_SIGNAL_META = "BindSignal";
 
     public function new() {}
 
@@ -72,7 +73,10 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getClassFieldUnbindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
         var signalName = signalName(field.name);
-        return macro $expr.$signalName.remove($listener);
+        return if (!listener.expr.match(EConst(CIdent("null"))))
+            macro $expr.$signalName.remove($listener);
+        else
+            macro $expr.$signalName.removeAll();
     }
 
     public function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr {
@@ -81,6 +85,19 @@ class BindSignalProvider implements IBindingSignalProvider {
            case FVar(_, _): [oldValue, newValue];
         }
         return dispatchSignal(expr, field.name, args, hasLazy(field.bindableMeta()));
+    }
+    
+    public function getDisposeBindingsExpr(expr:ExprOf<IBindable>, type:Type):Expr {
+        return macro {
+            var meta = haxe.rtti.Meta.getFields($p{type.toString().split(".")});
+            if (meta != null) for (m in std.Reflect.fields(meta)) {
+                var data:Dynamic<String> = std.Reflect.field(meta, m);
+                if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
+                    var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field($expr, m);
+                    if (signal != null) signal.dispose();
+                }
+            }
+        }
     }
 
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>) {
@@ -93,14 +110,15 @@ class BindSignalProvider implements IBindingSignalProvider {
             res.push({
                 name: signalPrivateName,
                 kind: FVar(type, null),
-                pos: field.pos
+                pos: field.pos,
+                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ]
             });
 
             res.push({
                 name: signalName,
                 kind: FProp("get", "never", type, null),
                 pos: field.pos,
-                access: [APublic]
+                access: [APrivate],
             });
 
             var getter = macro function foo() {
@@ -126,7 +144,8 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalName,
                 kind: FProp("default", "null", type, builder),
                 pos: field.pos,
-                access: [APublic]
+                access: [APrivate],
+                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ]
             });
         }
     }
@@ -203,7 +222,7 @@ class Signal<T> {
     @:expose inline function checkLock() {
         if (lock > 0) {
             listeners = listeners.copy();
-            lock --;
+            lock = 0;
         }
     }
 }

@@ -10,10 +10,11 @@ using bindx.MetaUtils;
 #end
 using Lambda;
 
+@:access(bindx.BindMacros)
 class Bind {
 
-	@:noUsing macro static public function bindx(field:Expr, listener:Expr):Expr {
-		return bind(field, listener, true);
+	@:noUsing macro static public function bind(field:Expr, listener:Expr):Expr {
+		return _bind(field, listener, true);
 	}
 
 	@:noUsing macro static public function bindTo(field:Expr, target:Expr):Expr {
@@ -21,17 +22,25 @@ class Bind {
 		return BindMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
 	}
 
-	@:noUsing macro static public function unbindx(field:Expr, listener:Expr):Expr {
-		return bind(field, listener, false);
+	@:noUsing macro static public function unbind(field:Expr, ?listener:Expr):Expr {
+		return _bind(field, listener, false);
 	}
 
 	@:noUsing macro static public function notify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
 		var fieldData = checkField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
+    
+    @:noUsing macro static public function disposeBindings(object:ExprOf<IBindable>):Expr {
+        var type = Context.typeof(object).follow();
+        if (!isBindable(type.getClass())) {
+            Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
+        }
+		return BindMacros.bindingSignalProvider.getDisposeBindingsExpr(object, type);
+	}
 
 	#if macro
-	static function bind(field:Expr, listener:Expr, doBind:Bool):Expr {
+	static function _bind(field:Expr, listener:Expr, doBind:Bool):Expr {
 		var fieldData = checkField(field);
 		return if (fieldData != null) {
 			if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
@@ -71,10 +80,11 @@ class Bind {
 	}
 
 	static inline function isBindable(classType:ClassType) {
-		return classType.interfaces.exists(function (it) {
+		var res = classType.interfaces.exists(function (it) {
 			var t = it.t.get();
 			return t.module == "bindx.IBindable" && t.name == "IBindable";
 		});
+        return res || classType.superClass == null ? res : isBindable(classType.superClass.t.get());
 	}
 	#end
 }

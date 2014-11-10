@@ -1,5 +1,7 @@
 package ;
 
+import bindx.Bind;
+
 class TestProperty extends haxe.unit.TestCase {
 	public function new() {
 		super();
@@ -10,7 +12,7 @@ class TestProperty extends haxe.unit.TestCase {
 		p.s = "1";
 		var callNum = 0;
 
-		p.sChanged.add(function (from, to) {
+		Bind.bind(p.s, function (from, to) {
 			assertEquals(from, "1");
 			assertEquals(to, "");
 			callNum ++;
@@ -18,9 +20,9 @@ class TestProperty extends haxe.unit.TestCase {
 
 		p.s = null;
 
-		p.sChanged.removeAll();
+        Bind.unbind(p.s);
 
-		p.sChanged.add(function (from, to) {
+		Bind.bind(p.s, function (from, to) {
 			assertEquals(from, "");
 			assertEquals(to, "1");
 			callNum ++;

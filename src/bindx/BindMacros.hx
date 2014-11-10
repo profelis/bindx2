@@ -25,12 +25,7 @@ class BindMacros {
 
 	static var processed:Array<Type> = [];
 
-    static public var bindingSignalProvider:IBindingSignalProvider;
-
-    static public function setBindingSignalProvider(value:IBindingSignalProvider) {
-        bindingSignalProvider = value;
-        return macro {};
-    }
+    static var bindingSignalProvider:IBindingSignalProvider;
 
     macro static public function buildIBindable():Array<Field> {
         var type = Context.getLocalType();
@@ -67,7 +62,7 @@ class BindMacros {
         var inlineSetter = meta.findParam(INLINE_SETTER);
         if (forceParam.isNotNullAndTrue()) {
             if (inlineSetter != null)
-                Context.warning('\'$INLINE_SETTER\' ingored. \'$FORCE\' mode', inlineSetter.pos);
+                Context.warning('\'$INLINE_SETTER\' ignored. \'$FORCE\' mode', inlineSetter.pos);
             res.push(field);
             return;
         }
@@ -96,7 +91,7 @@ class BindMacros {
 
     		case FProp(get, set, type, expr):
                 if (inlineSetter != null)
-                    Context.warning('$INLINE_SETTER ingored. Setter already exist', inlineSetter.pos);
+                    Context.warning('$INLINE_SETTER ignored. Setter already exist', inlineSetter.pos);
                 var fieldName = field.name;
                 var setter = fields.find(function (it) return it.name == 'set_$fieldName');
                 if (setter == null) return;

@@ -1,5 +1,6 @@
 package ;
 
+import bindx.Bind;
 import haxe.unit.TestCase;
 
 class BaseTest extends TestCase {
@@ -12,13 +13,13 @@ class BaseTest extends TestCase {
 		var b = new Bindable1();
 		b.str = "a";
 		var callNum = 0;
-		b.strChanged.add(function (from, to) {
+        Bind.bind(b.str, function (from, to) {
 			assertEquals(from, "a");
 			assertEquals(to, "b");
 			callNum ++;
 		});
 
-		bindx.Bind.bindx(b.str, function (from, to) {
+		bindx.Bind.bind(b.str, function (from, to) {
 			assertEquals(from, "a");
 			assertEquals(to, "b");
 			callNum ++;
@@ -37,13 +38,13 @@ class BaseTest extends TestCase {
 			callNum ++;
 		}
 
-		b.strChanged.add(listener);
-		bindx.Bind.bindx(b.str, listener);
+		bindx.Bind.bind(b.str, listener);
+		bindx.Bind.bind(b.str, listener);
 		b.str = "";
 		assertEquals(callNum, 1);
 
-		b.strChanged.add(listener);
-		bindx.Bind.unbindx(b.str, listener);
+		bindx.Bind.bind(b.str, listener);
+		bindx.Bind.unbind(b.str, listener);
 		b.str = "1";
 		assertEquals(callNum, 1);
 	}
@@ -53,19 +54,19 @@ class BaseTest extends TestCase {
 		b.str = null;
 		var callNum = 0;
 
-		bindx.Bind.bindx(b.str, function (_, _) callNum++);
-		bindx.Bind.bindx(b.str, function (_, _) callNum++);
+		bindx.Bind.bind(b.str, function (_, _) callNum++);
+		bindx.Bind.bind(b.str, function (_, _) callNum++);
 		b.str = "";
 		assertEquals(callNum, 2);
 
-		b.strChanged.removeAll();
+        bindx.Bind.unbind(b.str);
 		b.str = "1";
 		assertEquals(callNum, 2);
-
-		b.strChanged.dispose();
+        
+        Bind.disposeBindings(b);
 		var addError = false;
 		try {
-			b.strChanged.add(function (_, _) {});
+            Bind.bind(b.str, function (_, _) {});
 		} catch (e:Dynamic) {
 			addError = true;
 		}
@@ -81,8 +82,9 @@ class BaseTest extends TestCase {
 			assertEquals(to, "2");
 			callNum ++;
 		}
-		b.strChanged.add(listener);
-		b.strChanged.dispatch("1", "2");
+        
+		Bind.bind(b.str, listener);
+		bindx.Bind.notify(b.str, "1", "2");
 		assertEquals(callNum, 1);
 
 		bindx.Bind.notify(b.str, "1", "2");
@@ -93,7 +95,7 @@ class BaseTest extends TestCase {
 		var b = new Bindable1();
 		b.str = null;
 		var callNum = 0;
-		b.bindChanged.add(function () callNum++);
+        Bind.bind(b.bind, function () callNum++);
 
 		b.i = 10;
 		assertEquals(callNum, 1);

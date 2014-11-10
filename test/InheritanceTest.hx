@@ -1,6 +1,7 @@
 package ;
 
 import bindx.IBindable;
+import bindx.Bind;
 
 class InheritanceTest extends haxe.unit.TestCase {
 	public function new() {
@@ -12,7 +13,7 @@ class InheritanceTest extends haxe.unit.TestCase {
 		c.i = 0;
 		c.s = "0";
 		var iChanged = 0;
-		c.iChanged.add(function (from, to) {
+		Bind.bind(c.i, function (from, to) {
 			assertEquals(from, 0);
 			assertEquals(to, 1);
 			iChanged ++;
@@ -21,7 +22,7 @@ class InheritanceTest extends haxe.unit.TestCase {
 		assertEquals(iChanged, 1);
 
 		var sChanged = 0;
-		c.sChanged.add(function (from, to) {
+		Bind.bind(c.s, function (from, to) {
 			assertEquals(from, "0");
 			assertEquals(to, "1");
 			sChanged ++;
