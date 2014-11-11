@@ -29,9 +29,9 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function new() {}
 
-    @:expose static inline function signalName(fieldName:String) return fieldName + SIGNAL_POSTFIX;
-    @:expose static inline function signalGetterName(fieldName:String) return "get_" + signalName(fieldName);
-    @:expose static inline function signalPrivateName(fieldName:String) return "_" + signalName(fieldName);
+    @:extern static inline function signalName(fieldName:String) return fieldName + SIGNAL_POSTFIX;
+    @:extern static inline function signalGetterName(fieldName:String) return "get_" + signalName(fieldName);
+    @:extern static inline function signalPrivateName(fieldName:String) return "_" + signalName(fieldName);
 
     public function getFieldDispatcher(field:Field, res:Array<Field>) {
         switch (field.kind) {
@@ -112,7 +112,8 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalPrivateName,
                 kind: FVar(type, null),
                 pos: field.pos,
-                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ]
+                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ],
+                access: [APrivate]
             });
 
             res.push({
@@ -164,7 +165,7 @@ class BindSignalProvider implements IBindingSignalProvider {
             }
     }
 
-    @:expose inline function hasLazy(meta:MetadataEntry) {
+    @:extern inline function hasLazy(meta:MetadataEntry) {
         return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
     }
 }
@@ -184,7 +185,8 @@ class FieldSignal<T> extends Signal<T -> T -> Void> {
 
     public function dispatch(oldValue:T = null, newValue:T = null):Void {
         lock ++;
-        for (l in listeners) l(oldValue, newValue);
+        var ls = listeners;
+        for (l in ls) l(oldValue, newValue);
         if (lock > 0) lock --;
     }
 }
@@ -221,7 +223,7 @@ class Signal<T> {
         }
     }
 
-    @:expose inline function checkLock() {
+    inline function checkLock() {
         if (lock > 0) {
             listeners = listeners.copy();
             lock = 0;
