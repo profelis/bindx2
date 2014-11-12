@@ -25,6 +25,7 @@ class BindSignalProvider implements IBindingSignalProvider {
      * default value: false
      */
     static inline var INLINE_SIGNAL_GETTER = "inlineSignalGetter";
+    
     static inline var BIND_SIGNAL_META = "BindSignal";
 
     public function new() {}
@@ -74,7 +75,7 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getClassFieldUnbindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
         var signalName = signalName(field.name);
-        return if (!listener.expr.match(EConst(CIdent("null"))))
+        return if (!isNull(listener))
             macro $expr.$signalName.remove($listener);
         else
             macro $expr.$signalName.removeAll();
@@ -82,8 +83,14 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr {
         var args = switch (field.kind) {
-            case FMethod(_): [];
-           case FVar(_, _): [oldValue, newValue];
+            case FMethod(_): 
+                if (!isNull(oldValue))
+                    Context.error("method notify don't require oldValue", oldValue.pos);
+                if (!isNull(newValue))
+                    Context.error("method notify don't require newValue", newValue.pos);
+                [];
+            case FVar(_, _):
+                [oldValue, newValue];
         }
         return dispatchSignal(expr, field.name, args, hasLazy(field.bindableMeta()));
     }
@@ -168,6 +175,10 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     @:extern inline function hasLazy(meta:MetadataEntry) {
         return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
+    }
+    
+    @:extern inline function isNull(expr:Expr):Bool {
+        return expr == null || expr.expr.match(EConst(CIdent("null")));
     }
 }
 
