@@ -1,14 +1,6 @@
 package ;
 
-import haxe.unit.TestRunner;
+import buddy.BuddySuite;
 
-class Tests {
-
-	static function main() {
-		var runner = new TestRunner();
-		runner.add(new BaseTest());
-		runner.add(new InheritanceTest());
-		runner.add(new TestProperty());
-		runner.run();
-	}
-}
+@:build(buddy.GenerateMain.build(null, ["test"]))
+class Tests extends BuddySuite {}

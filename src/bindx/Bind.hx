@@ -30,8 +30,8 @@ class Bind {
 		return internalNotify(field, oldValue, newValue);
 	}
     
-    @:noUsing macro static public function disposeBindings(object:ExprOf<IBindable>):Expr {
-        return internalDisposeBindings(object);
+    @:noUsing macro static public function unbindAll(object:ExprOf<IBindable>):Expr {
+        return internalUnbindAll(object);
 	}
 
 	#if macro
@@ -54,12 +54,12 @@ class Bind {
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
 
-	public static function internalDisposeBindings(object:ExprOf<IBindable>):Expr {
+	public static function internalUnbindAll(object:ExprOf<IBindable>):Expr {
         var type = Context.typeof(object).follow();
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
         }
-		return BindMacros.bindingSignalProvider.getDisposeBindingsExpr(object, type);
+		return BindMacros.bindingSignalProvider.getUnbindAllExpr(object, type);
 	}
 
 	public static function checkField(field:Expr):{e:Expr, field:ClassField} {

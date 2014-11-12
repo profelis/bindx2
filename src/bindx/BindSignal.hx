@@ -88,14 +88,15 @@ class BindSignalProvider implements IBindingSignalProvider {
         return dispatchSignal(expr, field.name, args, hasLazy(field.bindableMeta()));
     }
     
-    public function getDisposeBindingsExpr(expr:ExprOf<IBindable>, type:Type):Expr {
+    public function getUnbindAllExpr(expr:ExprOf<IBindable>, type:Type):Expr {
         return macro {
             var meta = haxe.rtti.Meta.getFields(std.Type.getClass($expr));
             if (meta != null) for (m in std.Reflect.fields(meta)) {
                 var data:Dynamic<String> = std.Reflect.field(meta, m);
                 if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
                     var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field($expr, m);
-                    if (signal != null) signal.dispose();
+                    if (signal != null)
+                        signal.removeAll();
                 }
             }
         }
@@ -195,7 +196,7 @@ class Signal<T> {
 
     var listeners:Array<T>;
 
-    var lock = 0;
+    var lock:Int = 0;
 
     public function new() {
         removeAll();
@@ -203,10 +204,7 @@ class Signal<T> {
 
     public inline function removeAll() {
         listeners = [];
-    }
-
-    public inline function dispose() {
-        listeners = null;
+        lock = 0;
     }
 
     public function add(listener:T):Void {

@@ -1,0 +1,9 @@
+-main Tests
+-cp src
+-cp test
+-D dump=pretty
+-neko bin/test.n
+-lib buddy
+-lib utest
+-debug
+-D fdb

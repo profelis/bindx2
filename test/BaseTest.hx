@@ -2,115 +2,113 @@ package ;
 
 import bindx.Bind;
 import bindx.Bind.bind in bind;
-import haxe.unit.TestCase;
+import buddy.*;
 
-class BaseTest extends TestCase {
+using buddy.Should;
+
+class BaseTest extends BuddySuite {
 
 	public function new() {
 		super();
-	}
+	
+		describe("Base bindx functionality", {
+			
+			var b:Bindable1;
+			var callNum:Int;
+			
+			before({
+				b = new Bindable1();
+				callNum = 0;
+			});
+			
+			it ("bindx should bind properties", {
+				var strFrom = b.str = "a";
+				
+		        bind(b.str, function (from, to) {
+					from.should.be(strFrom);
+					to.should.be(b.str);
+					callNum ++;
+				});
 
-	function test1() {
-		var b = new Bindable1();
-		b.str = "a";
-		var callNum = 0;
-        bind(b.str, function (from, to) {
-			assertEquals(from, "a");
-			assertEquals(to, "b");
-			callNum ++;
+				Bind.bind(b.str, function (from, to) {
+					from.should.be(strFrom);
+					to.should.be(b.str);
+					callNum ++;
+				});
+				
+				b.str = "b";
+				callNum.should.be(2);
+			});
+			
+			it("bindx should bind 'null' values", {
+				b.str = null;
+				var listener = function (from:String, to:String) {
+					from.should.be(null);
+					to.should.be(b.str);
+					callNum ++;
+				}
+
+				bind(b.str, listener);
+				Bind.bind(b.str, listener);
+				b.str = "";
+				callNum.should.be(1);
+
+				bindx.Bind.unbind(b.str, listener);
+				b.str = "1";
+				callNum.should.be(1);
+			});
+			
+			it("bindx should notify manual", {
+				b.str = "3";
+				var f = "1";
+				var t = "2";
+				var listener = function (from:String, to:String) {
+					from.should.be(f);
+					to.should.be(t);
+					callNum ++;
+				};
+				bind(b.str, listener);
+				
+				Bind.notify(b.str, f, t);
+				callNum.should.be(1);
+			});
+			
+			it("bindx should unbind all listeners", {
+				bind(b.str, function (from, to) callNum++);
+				bind(b.str, function (from, to) callNum++);
+				
+				Bind.unbind(b.str);
+				b.str = b.str + "1";
+				
+				callNum.should.be(0);
+			});
+			
+			it("bindx should unbind all bindings (signal exists)", {
+				bind(b.str, function (_, _) callNum++); // create binding signal
+				bind(b.bind, function () callNum++);
+				
+				Bind.unbindAll(b);
+				
+				b.str = b.str + "1";
+				b.bind();
+				callNum.should.be(0);
+			});
+			
+			it("bindx should unbind all bindings (signal expected)", {
+				Bind.unbindAll(b);
+				
+				b.str = b.str + "1";
+				b.bind();
+				callNum.should.be(0);
+			});
 		});
-
-		bind(b.str, function (from, to) {
-			assertEquals(from, "a");
-			assertEquals(to, "b");
-			callNum ++;
-		});
-		b.str = "b";
-		assertEquals(callNum, 2);
-	}
-
-	function test2() {
-		var b = new Bindable1();
-		b.str = null;
-		var callNum = 0;
-		var listener = function (from, to) {
-			assertEquals(from, null);
-			assertEquals(to, "");
-			callNum ++;
-		}
-
-		bind(b.str, listener);
-		bind(b.str, listener);
-		b.str = "";
-		assertEquals(callNum, 1);
-
-		Bind.bind(b.str, listener);
-		bindx.Bind.unbind(b.str, listener);
-		b.str = "1";
-		assertEquals(callNum, 1);
-	}
-
-	function test3() {
-		var b = new Bindable1();
-		b.str = null;
-		var callNum = 0;
-
-		bind(b.str, function (_, _) callNum++);
-		bind(b.str, function (_, _) callNum++);
-		b.str = "";
-		assertEquals(callNum, 2);
-
-        Bind.unbind(b.str);
-		b.str = "1";
-		assertEquals(callNum, 2);
-        
-        Bind.disposeBindings(b);
-		var addError = false;
-		try {
-            Bind.bind(b.str, function (_, _) {});
-		} catch (e:Dynamic) {
-			addError = true;
-		}
-		assertTrue(addError);
-	}
-
-	function test4() {
-		var b = new Bindable1();
-		b.str = null;
-		var callNum = 0;
-		var listener = function (from, to) {
-			assertEquals(from, "1");
-			assertEquals(to, "2");
-			callNum ++;
-		}
-        
-		Bind.bind(b.str, listener);
-		Bind.notify(b.str, "1", "2");
-		assertEquals(callNum, 1);
-
-		Bind.notify(b.str, "1", "2");
-		assertEquals(callNum, 2);
-	}
-
-	function test5() {
-		var b = new Bindable1();
-		b.str = null;
-		var callNum = 0;
-        Bind.bind(b.bind, function () callNum++);
-
-		b.i = 10;
-		assertEquals(callNum, 1);
-		assertFalse(Reflect.hasField(b, "noBindChanged"));
-
-		Bind.notify(b.bind);
-		assertEquals(callNum, 2);
 	}
 }
 
 @:bindable
 class Bindable1 implements bindx.IBindable {
 
-	
+	@:bindable(lazySignal=false)
 	public var str:String;
 
 	@:bindable
