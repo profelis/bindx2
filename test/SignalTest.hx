@@ -1,7 +1,6 @@
 package ;
 
 import bindx.Bind;
-import bindx.Bind.bind in bind;
 import buddy.*;
 
 using buddy.Should;

@@ -11,6 +11,13 @@ class TestProperty extends BuddySuite {
 		super();
 		
 		describe("Bindx modify field setter", {
+			
+			var p:BindableProperty;
+			
+			before({
+				p = new BindableProperty();
+			});
+			
 			it("bindx should bind/unbind fields with setter (lazySignal=true)");
 			it("bindx should bind/unbind fields with setter (lazySignal=false)");
 			it("bindx should bind 2 objects (custom setter) (lazySignal=true)");
