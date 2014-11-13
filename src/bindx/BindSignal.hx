@@ -220,7 +220,8 @@ class Signal<T> {
 
     public function add(listener:T):Void {
         var pos = listeners.indexOf(listener);
-        if (pos == -1) checkLock(); else listeners.splice(pos, 1);
+        checkLock();
+        if (pos > -1) listeners.splice(pos, 1);
         listeners.push(listener);
     }
 

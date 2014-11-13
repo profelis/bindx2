@@ -49,6 +49,52 @@ class SignalTest extends BuddySuite {
                 callNum.should.be(3);
             });
             
+            it("signal should correct add/remove listeners", {
+                function listener2(_, _) {
+                    callNum ++;
+                }
+                
+                function listener(_, _) {
+                    fs.add(listener2);
+                    callNum++;
+                }
+                
+                fs.add(listener);
+                fs.dispatch(null, null);
+                
+                callNum.should.be(1); // 1 listener only
+                
+                fs.dispatch(null, null);
+                
+                callNum.should.be(3); // listener2 added
+                
+                fs.remove(listener2);
+                fs.dispatch(null, null);
+                
+                callNum.should.be(4); // listener2 removed
+                
+                fs.removeAll();
+                fs.dispatch(null, null);
+                
+                callNum.should.be(4); // all listeners removed
+            });
+            
+            it("signal should correct dispatch in listener", {
+                function listener(_, _) {
+                    fs.remove(listener);
+                    fs.dispatch(null, null);
+                    callNum++;
+                }
+                var callNum2 = 0;
+                function listener2(_, _) callNum2++;
+                
+                fs.add(listener);
+                fs.add(listener2);
+                fs.dispatch(null, null);
+                
+                callNum.should.be(1);
+                callNum2.should.be(2);
+            });
         });
 
         describe("MethodSignal functionality tests", {
