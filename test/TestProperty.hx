@@ -1,13 +1,24 @@
 package ;
 
 import bindx.Bind;
+import bindx.Bind.bind in bind;
+import buddy.*;
 
-class TestProperty extends haxe.unit.TestCase {
+using buddy.Should;
+
+class TestProperty extends BuddySuite {
 	public function new() {
 		super();
+		
+		describe("Bindx modify field setter", {
+			it("bindx should bind/unbind fields with setter (lazySignal=true)");
+			it("bindx should bind/unbind fields with setter (lazySignal=false)");
+			it("bindx should bind 2 objects (custom setter) (lazySignal=true)");
+			it("bindx should bind 2 objects (custom setter) (lazySignal=false)");
+		});
 	}
 
-	function test1() {
+	/*function test1() {
 		var p = new BindableProperty();
 		p.s = "1";
 		var callNum = 0;
@@ -40,20 +51,32 @@ class TestProperty extends haxe.unit.TestCase {
 		p.s = "123";
 		assertEquals(t.a, p.s);
 	}
+	*/
 }
 
 class BindableProperty implements bindx.IBindable {
 	public function new() {
 	}
 
-	@:bindable
-	public var s(default, set):String;
+	@:bindable(lazySignal=true)
+	public var str(default, set):String;
 
-	function set_s(v) {
+	function set_str(v) {
 		if (v == null) {
-			return s = "";
+			return str = "";
 		}
-		s = v;
+		str = v;
+		return v;
+	}
+	
+	@:bindable(lazySignal=false)
+	public var str2(default, set):String;
+
+	function set_str2(v) {
+		if (v == null) {
+			return str2 = "";
+		}
+		str2 = v;
 		return v;
 	}
 }

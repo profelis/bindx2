@@ -21,7 +21,7 @@ class BaseTest extends BuddySuite {
 				callNum = 0;
 			});
 			
-			it ("bindx should bind/unbind properties (lazySignal=true)", {
+			it ("bindx should bind/unbind fields (lazySignal=true)", {
 				var strFrom = b.str = "a";
 				var callNum2 = 0;
 				
@@ -51,7 +51,7 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it ("bindx should bind/unbind properties (lazySignal=false)", {
+			it ("bindx should bind/unbind fields (lazySignal=false)", {
 				var strFrom = b.str2 = "a";
 				var callNum2 = 0;
 				
@@ -137,6 +137,9 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
+			it("bindx should bind 2 objects (lazySignal=true)");
+			it("bindx should bind 2 objects (lazySignal=false)");
+			
 			it("bindx should bind and notify methods (lazySignal=true)", {
 				var listener = function () callNum++;
 				bind(b.bind, listener);
@@ -217,16 +220,21 @@ class BaseTest extends BuddySuite {
 			
 			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", {
 				bind(b.str, function (_, _) callNum++); // create binding signal
-				bind(b.str2, function (_, _) callNum++); // create binding signal
+				bind(b.str2, function (_, _) callNum++);
 				bind(b.bind, function () callNum++);
 				bind(b.bind2, function () callNum++);
 				
 				Bind.unbindAll(b);
 				
-				b.str = b.str + "1";
-				b.str2 = b.str2 + "1";
-				Bind.notify(b.bind);
-				Bind.notify(b.bind2);
+				try {
+					b.str = b.str + "1";
+					b.str2 = b.str2 + "1";
+					Bind.notify(b.bind);
+					Bind.notify(b.bind2);
+				}
+				catch (e:Dynamic) {
+					fail();
+				}
 				
 				callNum.should.be(0);
 			});
@@ -234,12 +242,17 @@ class BaseTest extends BuddySuite {
 			it("bindx should unbind all bindings (signal expected) (lazySignal=true/false)", {
 				Bind.unbindAll(b);
 				
-				b.str = b.str + "1";
-				b.str2 = b.str2 + "1";
-				Bind.notify(b.bind);
-				Bind.notify(b.bind2);
+				try {
+					b.str = b.str + "1";
+					b.str2 = b.str2 + "1";
+					Bind.notify(b.bind);
+					Bind.notify(b.bind2);
+				}
+				catch (e:Dynamic) {
+					fail();
+				}
 				
-				callNum.should.be(0);
+				true.should.be(true);
 			});
 		});
 	}
