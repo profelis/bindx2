@@ -73,12 +73,12 @@ class Bind {
 				
 				var field:ClassField = classType.findField(field, null);
 				if (field == null) {
-					Context.error('\'${e.toString()}.$field\' expected', field.pos);
+					Context.error('\'${e.toString()}.${field.name}\' expected', field.pos);
 					return null;
 				}
 
 				if (!field.hasBindableMeta()) {
-					Context.error('\'${e.toString()}.$field\' is not bindable', field.pos);
+					Context.error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
 					return null;
 				}
 
