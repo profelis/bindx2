@@ -137,8 +137,44 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind 2 objects (lazySignal=true)");
-			it("bindx should bind 2 objects (lazySignal=false)");
+			it("bindx should bind 2 objects (lazySignal=true)", {
+				var callNum2 = 0;
+				var target = {a:""};
+				var s = "";
+				
+				var unbindA = Bind.bindTo(b.str, target.a);
+				Bind.bindTo(b.str, s);
+				
+				var prev = b.str = "b";
+				target.a.should.be(prev);
+				s.should.be(prev);
+				
+				unbindA();
+				Bind.unbindAll(b);
+				
+				b.str = "c";
+				target.a.should.be(prev);
+				s.should.be(prev);
+			});
+			
+			it("bindx should bind 2 objects (lazySignal=false)", {
+				var callNum2 = 0;
+				var target = {a:""};
+				var s = "";
+				
+				Bind.bindTo(b.str2, target.a);
+				Bind.bindTo(b.str2, s);
+				
+				var prev = b.str2 = "b";
+				target.a.should.be(prev);
+				s.should.be(prev);
+				
+				Bind.unbind(b.str2);
+				
+				b.str2 = "c";
+				target.a.should.be(prev);
+				s.should.be(prev);
+			});
 			
 			it("bindx should bind and notify methods (lazySignal=true)", {
 				var listener = function () callNum++;
