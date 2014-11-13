@@ -294,7 +294,7 @@ class BaseTest extends BuddySuite {
 	}
 }
 
-@:bindable
+
 class Bindable1 implements bindx.IBindable {
 
 	@:bindable(lazySignal=true)
@@ -303,14 +303,14 @@ class Bindable1 implements bindx.IBindable {
 	@:bindable(lazySignal=false)
 	public var str2:String;
 
-	public function new() {
-	}
-
 	@:bindable(lazySignal=true)
 	public function bind() {
 	}
 	
 	@:bindable(lazySignal=false)
 	public function bind2() {
+	}
+	
+	public function new() {
 	}
 }
