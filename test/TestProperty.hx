@@ -10,7 +10,7 @@ class TestProperty extends BuddySuite {
 	public function new() {
 		super();
 		
-		describe("Bindx modify field setter", {
+		describe("Using bind properties", {
 			
 			var b:BindableProperty;
             var callNum:Int;

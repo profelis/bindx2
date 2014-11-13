@@ -11,7 +11,7 @@ class BaseTest extends BuddySuite {
 	public function new() {
 		super();
 	
-		describe("Base bindx functionality", {
+		describe("Using base functionality", {
 			
 			var b:Bindable1;
 			var callNum:Int;

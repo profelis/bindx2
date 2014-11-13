@@ -1,13 +1,20 @@
 package ;
 
-import bindx.IBindable;
 import bindx.Bind;
+import bindx.IBindable;
+import buddy.BuddySuite;
 
-class InheritanceTest extends haxe.unit.TestCase {
+using buddy.Should;
+
+class InheritanceTest extends BuddySuite {
 	public function new() {
 		super();
-	}
-
+	
+        describe("Using classes inheritance", {
+            it("bindx should support class inheritance");
+        });
+    }
+        /*
 	function testChild() {
 		var c = new BindableChild();
 		c.i = 0;
@@ -29,9 +36,7 @@ class InheritanceTest extends haxe.unit.TestCase {
 		});
 		c.s = "1";
 		assertEquals(sChanged, 1);
-	}
-
-
+    }*/
 }
 
 @:bindable

@@ -10,7 +10,7 @@ class SignalTest extends BuddySuite {
     public function new() {
         super();
     
-        describe("FieldSignal functionality tests", {
+        describe("Using BindSignal", {
             
             var fs:FieldSignal<String>;
             var callNum:Int;

@@ -10,7 +10,7 @@ class MetaTest extends BuddySuite {
     
     public function new() {
         
-        describe("bindx should inherit @bindable meta", {
+        describe("Using @bindable meta inheritance", {
             
             var b:BindableMeta;
             var callNum:Int;
