@@ -252,8 +252,6 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all method listeners");
-			
 			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", {
 				bind(b.str, function (_, _) callNum++); // create binding signal
 				bind(b.str2, function (_, _) callNum++);
