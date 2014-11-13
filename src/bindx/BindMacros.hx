@@ -101,7 +101,7 @@ class BindMacros {
                             func.expr = macro {
                                 var $OLD_VALUE = this.$fieldName;
                                 if ($i{OLD_VALUE} == $i{func.args[0].name}) return $i{OLD_VALUE};
-                                $e{func.expr.map(patchSetter)};
+                                $e{patchSetter(func.expr)};
                             };
                             patchField = null;
                         case _:

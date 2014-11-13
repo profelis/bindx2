@@ -20,7 +20,7 @@ class TestProperty extends BuddySuite {
                 callNum = 0;
 			});
 			
-			it ("bindx should bind/unbind fields (lazySignal=true)", {
+			it("bindx should bind/unbind fields (lazySignal=true)", {
 				var strFrom = b.str = "a";
 				var callNum2 = 0;
 				
@@ -50,7 +50,7 @@ class TestProperty extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it ("bindx should bind/unbind fields (lazySignal=false)", {
+			it("bindx should bind/unbind fields (lazySignal=false)", {
 				var strFrom = b.str2 = "a";
 				var callNum2 = 0;
 				
