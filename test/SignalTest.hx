@@ -97,7 +97,7 @@ class SignalTest extends BuddySuite {
             });
         });
 
-        describe("MethodSignal functionality tests", {
+        describe("Using MethodSignal", {
             
             var ms:MethodSignal;
             var callNum:Int;

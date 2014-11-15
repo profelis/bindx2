@@ -32,7 +32,7 @@ class Bind {
     
     @:noUsing macro static public function unbindAll(object:ExprOf<IBindable>):Expr {
         return internalUnbindAll(object);
-	}
+    }
 
 	#if macro
 
@@ -94,13 +94,14 @@ class Bind {
 	}
 	
 	public static function isBindable(classType:ClassType):Bool {
+        if (classType.module == "bindx.IBindable" && classType.name == "IBindable")
+            return true;
+
 		var t = classType;
 		while (t != null) {
-			for (it in t.interfaces) {
-				var t = it.t.get();
-				if (t.module == "bindx.IBindable" && t.name == "IBindable")
-					return true;
-			}
+			for (it in t.interfaces)
+                if (isBindable(it.t.get()))
+                    return true;
 			t = t.superClass != null ? t.superClass.t.get() : null;
 		}
 		return false;

@@ -9,38 +9,43 @@ using buddy.Should;
 class InheritanceTest extends BuddySuite {
 	public function new() {
 		super();
-	
+
         describe("Using classes inheritance", {
-            it("bindx should support class inheritance");
+            var b:BindableChild;
+            var bp:BindableParent;
+            var callNum:Int;
+            
+            before({
+                b = new BindableChild();
+                bp = new BindableParent();
+                callNum = 0;
+            });
+            
+            it("bindx should support class/interface inheritance", {
+                b.i = 1;
+                b.s = "a";
+                Bind.bind(b.i, function (_, _) callNum++);
+                Bind.bind(b.s, function (_, _) callNum++);
+                
+                b.i = 2;
+                b.s = "b";
+                callNum.should.be(2);
+                
+                bp.i = 1;
+                Bind.bind(bp.i, function (_, _) callNum++);
+                bp.i = 2;
+                callNum.should.be(3);
+            });
         });
     }
-        /*
-	function testChild() {
-		var c = new BindableChild();
-		c.i = 0;
-		c.s = "0";
-		var iChanged = 0;
-		Bind.bind(c.i, function (from, to) {
-			assertEquals(from, 0);
-			assertEquals(to, 1);
-			iChanged ++;
-		});
-		c.i = 1;
-		assertEquals(iChanged, 1);
+}
 
-		var sChanged = 0;
-		Bind.bind(c.s, function (from, to) {
-			assertEquals(from, "0");
-			assertEquals(to, "1");
-			sChanged ++;
-		});
-		c.s = "1";
-		assertEquals(sChanged, 1);
-    }*/
+interface IIBindable extends IBindable {
+    
 }
 
 @:bindable
-class BindableParent implements IBindable {
+class BindableParent implements IIBindable {
 	public function new() {}
 
 	public var i:Int;
