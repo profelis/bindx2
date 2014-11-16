@@ -49,7 +49,8 @@ before_install: # clone travis-hx repo
 
 install: # setup the target
   - ~/travis-hx/setup.sh
-  - haxelib install buddy
+  - haxelib git buddy git://github.com/profelis/buddy.git
+  - haxelib install promhx
 
 script:
   - cd $TRAVIS_BUILD_DIR
