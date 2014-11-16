@@ -5,3 +5,4 @@
 -neko bin/test.n
 -lib buddy
 -D reporter=buddy.reporting.TravisHxReporter
+-D console_log
