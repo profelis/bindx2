@@ -49,12 +49,12 @@ before_install: # clone travis-hx repo
 
 install: # setup the target
   - ~/travis-hx/setup.sh
-  - haxelib git buddy git://github.com/profelis/buddy.git
+  - haxelib git buddy git://github.com/profelis/buddy.git master src
   - haxelib install promhx
 
 script:
   - cd $TRAVIS_BUILD_DIR
   # build the target. This will call haxe with the HXFLAGS and HXFLAGS_EXTRA environment variables
-  - HXFLAGS="-cp src -cp test -main Tests -lib buddy -D reporter=buddy.TravisReporter" ~/travis-hx/build.sh
+  - HXFLAGS="-cp src -cp test -main Tests -lib buddy -D reporter=buddy.reporting.TravisReporter -D console_js" ~/travis-hx/build.sh
   # run the tests
   - ~/travis-hx/runtests.sh $FILENAME # this will set the $FILENAME defined on the environment variable to run the tests
