@@ -3,8 +3,6 @@ package ;
 import bindx.Bind;
 import bindx.IBindable;
 import buddy.BuddySuite;
-import haxe.rtti.XmlParser;
-import haxe.rtti.CType;
 
 using buddy.Should;
 
@@ -47,7 +45,6 @@ class MetaTest extends BuddySuite {
     }
 }
 
-@:rtti
 @:bindable(lazySignal=false)
 class BindableMeta implements IBindable {
     
