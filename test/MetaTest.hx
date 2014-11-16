@@ -3,6 +3,8 @@ package ;
 import bindx.Bind;
 import bindx.IBindable;
 import buddy.BuddySuite;
+import haxe.rtti.XmlParser;
+import haxe.rtti.CType;
 
 using buddy.Should;
 
@@ -37,14 +39,15 @@ class MetaTest extends BuddySuite {
             });
             
             it("bindx inherit metadata params", {
-                Reflect.hasField(b, "strChanged").should.be(true); // lazySignal=false
-                Reflect.hasField(b, "str2Changed").should.be(true); // lazySignal=false
+                @:privateAccess b.strChanged.should.not.be(null);
+                @:privateAccess b.str2Changed.should.not.be(null);
             });
             
         });
     }
 }
 
+@:rtti
 @:bindable(lazySignal=false)
 class BindableMeta implements IBindable {
     
