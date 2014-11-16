@@ -45,7 +45,7 @@ matrix:
     - env: SOME_ENV_HERE=some_opt
 
 before_install: # clone travis-hx repo
-  - travis_retry git clone --depth=50 --branch=master git://github.com/profelis/travis-hx.git ~/travis-hx
+  - travis_retry git clone --depth=50 --branch=patch-1 git://github.com/profelis/travis-hx.git ~/travis-hx
 
 install: # setup the target
   - ~/travis-hx/setup.sh
