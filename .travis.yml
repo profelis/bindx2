@@ -53,7 +53,10 @@ install: # setup the target
 
 script:
   - cd $TRAVIS_BUILD_DIR
+  - pwd
+  - ls
   # build the target. This will call haxe with the HXFLAGS and HXFLAGS_EXTRA environment variables
-  - HXFLAGS="-v --times -cp src -cp test -main Tests -lib buddy -D reporter=buddy.TravisReporter" bash -x ~/travis-hx/build.sh
+  - HXFLAGS="--times -cp src -cp test -main Tests -lib buddy -D reporter=buddy.TravisReporter" ~/travis-hx/build.sh
+  - ls
   # run the tests
   - ~/travis-hx/runtests.sh $FILENAME # this will set the $FILENAME defined on the environment variable to run the tests
