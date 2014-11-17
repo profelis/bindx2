@@ -1,6 +1,7 @@
 package bindx;
 
 #if macro
+import bindx.Error;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
@@ -63,32 +64,40 @@ class Bind {
 	}
 
 	public static function checkField(field:Expr):{e:Expr, field:ClassField} {
+		return try { tryCheckField(field); } catch (e:bindx.Error) { e.contextError(); null; };
+	}
+	
+	public static function tryCheckField(field:Expr):{e:Expr, field:ClassField} {
 		switch (field.expr) {
 			case EField(e, field):
 				var classType = Context.typeof(e).follow().getClass();
-				if (classType == null || !isBindable(classType)) {
-					Context.error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
+				if (classType == null) {
+					throw new FatalError('Type \'${e.toString()}\' is unknown', e.pos);
+					return null;
+				}
+				if (!isBindable(classType)) {
+					throw new Error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
 					return null;
 				}
 				
 				var field:ClassField = classType.findField(field, null);
 				if (field == null) {
-					Context.error('\'${e.toString()}.${field.name}\' expected', field.pos);
+					throw new FatalError('\'${e.toString()}.${field.name}\' expected', field.pos);
 					return null;
 				}
 
 				if (!field.hasBindableMeta()) {
-					Context.error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
+					throw new Error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
 					return null;
 				}
 
 				return {e:e, field:field};
 
             case EConst(CIdent(_)):
-            	Context.error('can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos);
+            	throw new Error('can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos);
 
 			case _:
-				Context.error('can\'t bind field \'${field.toString()}\'', field.pos);
+				throw new Error('can\'t bind field \'${field.toString()}\'', field.pos);
 		}
 		return null;
 	}
