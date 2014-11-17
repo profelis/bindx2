@@ -15,7 +15,7 @@ env:
     - TARGET=interp
     - TARGET=macro
       # optional: MACROFLAGS: specify the flags that are unique to building/running with --macro arguments
-    - TARGET=js TOOLCHAIN=default HXFLAGS_EXTRA="-D nodejs -js js.js" # target is tested by node.js
+    - TARGET=js TOOLCHAIN=default # HXFLAGS_EXTRA="-D nodejs -js js.js" # target is tested by node.js
       # optional: FILENAME
       # optional: NODECMD: set the command to be run by nodejs
     - TARGET=js TOOLCHAIN=browser # target is tested by browsers / phantomjs
