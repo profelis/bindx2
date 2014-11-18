@@ -64,10 +64,19 @@ class Bind {
 	}
 
 	public static function checkField(field:Expr):{e:Expr, field:ClassField} {
-		return try { tryCheckField(field); } catch (e:bindx.Error) { e.contextError(); null; };
+		var res = null;
+		try {
+			res = tryCheckField(field);
+			if (res.error != null)
+				res.error.contextError();
+		} catch (e:bindx.Error) { 
+			e.contextError();
+		};
+		return res;
 	}
 	
-	public static function tryCheckField(field:Expr):{e:Expr, field:ClassField} {
+	public static function tryCheckField(field:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
+		var error:bindx.Error;
 		switch (field.expr) {
 			case EField(e, field):
 				var classType = Context.typeof(e).follow().getClass();
@@ -76,8 +85,7 @@ class Bind {
 					return null;
 				}
 				if (!isBindable(classType)) {
-					throw new Error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
-					return null;
+					error = new bindx.Error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
 				}
 				
 				var field:ClassField = classType.findField(field, null);
@@ -87,17 +95,16 @@ class Bind {
 				}
 
 				if (!field.hasBindableMeta()) {
-					throw new Error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
-					return null;
+					error = new bindx.Error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
 				}
 
-				return {e:e, field:field};
+				return {e:e, field:field, error:error};
 
             case EConst(CIdent(_)):
-            	throw new Error('can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos);
+            	return {e:field, field:null, error:new bindx.Error('can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos)};
 
 			case _:
-				throw new Error('can\'t bind field \'${field.toString()}\'', field.pos);
+				return {e:field, field:null, error:new bindx.Error('can\'t bind field \'${field.toString()}\'', field.pos)};
 		}
 		return null;
 	}
