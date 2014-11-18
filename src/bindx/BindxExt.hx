@@ -1,4 +1,5 @@
 package bindx;
+import haxe.macro.Context;
 
 #if macro
 
@@ -8,6 +9,7 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 
 using Lambda;
+using haxe.macro.Tools;
 
 typedef FieldExpr = {
     var field:ClassField;
@@ -53,35 +55,112 @@ class BindExt {
             }
             prevField = field;
         }
-        fields.iter(function (it) trace(printer.printExpr(it.e) + " -> " + it.field.name + (it.params != null ? '(${printer.printExprs(it.params, ",")})' : "") + "   bind:" + it.bindable));
-        var i = 0;
-        
-        
+        for (it in fields)
+            trace(printer.printExpr(it.e) + " -> " + it.field.name + (it.params != null ? '(${printer.printExprs(it.params, ",")})' : "") + "   bind:" + it.bindable);
+
+        var i = fields.length - 1;
         var res = [];
-        for (field in fields) {
-            var listenerName = 'listener$i';
+        var unbindRes = [];
+        res.push(macro var listener0 = $ { listener } );
+        var zeroListener = null;
+        while (--i >= 0) {
+            var field = fields[i];
+            var next = fields[i + 1];
+            var listenerName = 'listener${i+1}';
+            var listenerNameExpr = macro $i { listenerName };
+            var nextListenerName = i == fields.length - 2 ? 'listener0' : 'listener${i+2}';
+            var nextListenerNameExpr = macro $i { nextListenerName };
+            var value = 'value${i+1}';
+            var valueExpr = macro $i { value };
+            
+            var fieldName = next.field.name;
+            var e = next.e;
+            
+            var fieldListenerBody = [];
+            var fieldListener:Expr;
+            if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
+            if (next.bindable) zeroListener = { f:next, l:nextListenerNameExpr };
+            
             if (field.bindable) {
-                var listener = switch (field.field.kind) {
-                    case FVar(_, _):
-                        macro function (from, to) {
-                            $listener($a{[from, to]});
-                        }
-                    case FMethod(_):
-                        macro function() {
-                            
-                        }
+                var type = Context.typeof(field.e).toComplexType();
+                res.push(macro var $value:Null<$type> = null );
+                var bind = BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, next.field, nextListenerNameExpr );
+                var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, next.field, nextListenerNameExpr );
+                fieldListenerBody.push(macro 
+                    if (n != null) {
+                        $ { bind }
+                        $nextListenerNameExpr($a { next.params != null ? [] : [macro n.$fieldName, macro n.$fieldName] } );
+                    }
+                );
+                if (field.params != null) {
+                    fieldListenerBody.unshift(macro $valueExpr = n );
+                    fieldListenerBody.unshift(macro var n = $e );
+                    fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
+                    
+                    fieldListener = macro function $listenerName () {
+                        $b { fieldListenerBody };
+                    };
                 }
-                res.push(macro var $listenerName = $listener);
-                var expr = BindMacros.bindingSignalProvider.getClassFieldBindExpr(field.e, field.field, listener = macro $i{listenerName});
-                trace(printer.printExpr(expr));
+                else {
+                    fieldListenerBody.unshift(macro $valueExpr = n );
+                    fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
+                    
+                    fieldListener = macro function $listenerName (o, n) {
+                        $b { fieldListenerBody };
+                    };
+                }
+                
+                unbindRes.push(macro if ($valueExpr != null) $unbind);
+                unbindRes.push(macro $valueExpr = null );
+
+                //trace(printer.printExpr(unbind));
             }
             else {
                 trace(printer.printExpr(field.e) + " . " + field.field.name);
+                /*if (field.params != null) {
+                    fieldListenerBody.unshift(macro var n = $e );
+                    
+                    fieldListener = macro function $listenerName () {
+                        $b { fieldListenerBody };
+                    };
+                }
+                else {
+                    fieldListener = macro function $listenerName (o, n) {
+                        $b { fieldListenerBody };
+                    };
+                }*/
             }
-            i++;
+            if (fieldListener != null) {
+                res.push(fieldListener);
+            }
         }
         
-        return macro {};
+        if (zeroListener == null) {
+            Context.error("Chain is not bindable ", expr.pos);
+        }
+        
+        var bind = BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l );
+        var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l );
+        res.push(macro try { $bind; } catch (e:Dynamic) {
+            trace("Warning: Can't initialize chain binding " + Std.string(e));
+        });
+        unbindRes.push(macro try { $unbind; } catch (e:Dynamic) {
+            trace("Warning: Unbind chain problem " + Std.string(e));
+        });
+        if (zeroListener.f.params != null) {
+            res.push(macro ${zeroListener.l}());
+        }
+        else {
+            var fieldName = zeroListener.f.field.name;
+            res.push(macro try { $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ); } catch (e:Dynamic) {
+                trace("Warning: Can't initialize chain binding " + Std.string(e));
+                });
+        }
+        res.push(macro function unbind() { $b { unbindRes } } );
+        
+        var res = macro $b { res };
+        trace(printer.printExpr(res));
+        return res;
     }
     #end
     
