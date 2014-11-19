@@ -37,13 +37,13 @@ class BindExt {
             try {
                 field = Bind.tryCheckField(prevField.e);
                 if (field.field != null)
-                    fields.unshift({field:field.field, bindable:field.error == null, e:field.e});
+                    fields.push({field:field.field, bindable:field.error == null, e:field.e});
                 else if (field.error != null) {
                     var end = true;
                     switch (prevField.e.expr) {
                         case ECall(e, params):
                             field = Bind.tryCheckField(e);
-                            fields.unshift({e:field.e, field:field.field, params:params, bindable:field.error == null});
+                            fields.push({e:field.e, field:field.field, params:params, bindable:field.error == null});
                             end = false;
                         case _:
                     }
@@ -58,17 +58,17 @@ class BindExt {
         for (it in fields)
             trace(printer.printExpr(it.e) + " -> " + it.field.name + (it.params != null ? '(${printer.printExprs(it.params, ",")})' : "") + "   bind:" + it.bindable);
 
-        var i = fields.length - 1;
+        var i = -1;
         var res = [];
         var unbindRes = [];
         res.push(macro var listener0 = $ { listener } );
         var zeroListener = null;
-        while (--i >= 0) {
-            var field = fields[i];
-            var next = fields[i + 1];
+        while (++i < fields.length - 1) {
+            var field = fields[i + 1];
+            var next = fields[i];
             var listenerName = 'listener${i+1}';
             var listenerNameExpr = macro $i { listenerName };
-            var nextListenerName = i == fields.length - 2 ? 'listener0' : 'listener${i+2}';
+            var nextListenerName = i == 0 ? 'listener0' : 'listener${i}';
             var nextListenerNameExpr = macro $i { nextListenerName };
             var value = 'value${i+1}';
             var valueExpr = macro $i { value };
@@ -78,8 +78,9 @@ class BindExt {
             
             var fieldListenerBody = [];
             var fieldListener:Expr;
-            if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
             if (next.bindable) zeroListener = { f:next, l:nextListenerNameExpr };
+            if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
+            
             
             if (field.bindable) {
                 var type = Context.typeof(field.e).toComplexType();
@@ -105,7 +106,7 @@ class BindExt {
                     fieldListenerBody.unshift(macro $valueExpr = n );
                     fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
                     
-                    fieldListener = macro function $listenerName (o, n) {
+                    fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>) {
                         $b { fieldListenerBody };
                     };
                 }

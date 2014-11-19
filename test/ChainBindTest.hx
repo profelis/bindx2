@@ -15,12 +15,15 @@ class ChainBindTest extends BuddySuite {
         describe("Using BindExt.chain", {
             
             var b:BindableChain;
+            var b2:BindableChain;
             var callNum:Int;
             
             before({
                 b = new BindableChain();
                 b.c = new BindableChain();
                 b.c.c = new BindableChain();
+                b2 = new BindableChain();
+                b2.c = new BindableChain();
                 callNum = 0;
             });
             
@@ -42,15 +45,16 @@ class ChainBindTest extends BuddySuite {
             });
             
             it("BindExt.chain should bind chain changes (double gap)", {
-                b.c.c.d = "a";
+                b.c.d = "a";
                 
-                BindExt.chain(b.c.c.d, function (_, _) callNum++);
-                
-                callNum.should.be(1);
-                
-                BindExt.chain(b.c.c.c.d, function (_, _) callNum++ );
+                BindExt.chain(b.c.d, function (_, _) callNum++);
                 
                 callNum.should.be(1);
+                
+                b2.d = "b";
+                b.c = b2;
+                
+                callNum.should.be(2);
             });
             
         });
@@ -65,7 +69,7 @@ class BindableChain implements bindx.IBindable {
     
     public var nd:String;
     
-    
+    @:bindable
     public var c:BindableChain;
     
     @:bindable
