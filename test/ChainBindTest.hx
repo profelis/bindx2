@@ -57,6 +57,22 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(2);
             });
             
+            it("BindExt.chain should bind default fields", {
+                b.d = "a";
+                
+                var unbind = BindExt.chain(b.d, function (f:String, t:String) {
+                    callNum ++;
+                });
+                
+                b.d = "b";
+                callNum.should.be(2);
+                
+                unbind();
+                
+                b.d = "c";
+                callNum.should.be(2);
+            });
+            
         });
     }
 }
