@@ -1,9 +1,9 @@
 # example travis.yml haxe configuration
-language: objective-c # change this to objective-c to test on a mac machine
+language: c # change this to objective-c to test on a mac machine
 
 env:
   global:
-    - OS=mac # add this too to let the script know that the OS is a mac
+    #- OS=mac # add this too to let the script know that the OS is a mac
     # - ARCH=i686 # add this to run in 32-bit mode. See availability at README
       # SAUCE_ACCESS_KEY
     - secure: "YOUR_ENCRYPTED_SAUCE_ACCESS_KEY" # if you want to use SauceLabs
@@ -45,7 +45,7 @@ matrix:
     - env: SOME_ENV_HERE=some_opt
 
 before_install: # clone travis-hx repo
-  - travis_retry git clone --depth=50 --branch=patch-1 git://github.com/profelis/travis-hx.git ~/travis-hx
+  - travis_retry git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git ~/travis-hx
 
 install: # setup the target
   - ~/travis-hx/setup.sh
