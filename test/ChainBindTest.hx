@@ -14,33 +14,57 @@ class ChainBindTest extends BuddySuite {
         
         describe("Using BindExt.chain", {
             
+            var val:String;
             var b:BindableChain;
             var b2:BindableChain;
             var callNum:Int;
             
             before({
-                b = new BindableChain();
-                b.c = new BindableChain();
-                b.c.c = new BindableChain();
-                b2 = new BindableChain();
-                b2.c = new BindableChain();
+                val = "a";
+                b = new BindableChain(4);
+                b2 = new BindableChain(4);
                 callNum = 0;
             });
             
-            it("BindExt.chain should bind chain changes (1 gap)", {
-                b.c.f("tada").d = "a";
-                var unbind = BindExt.chain(b.c.f("tada").d, function (_, t:String) {
+            it("BindExt.chain should bind chain changes (0 gap)", {
+                b.c.c.f("tada").d = val;
+                b2.c.c.f("tada").d = val;
+                var unbind = BindExt.chain(b.c.c.f("tada").d, function (_, t:String) {
                     callNum++;
-                    t.should.be(b.c.f("tada").d);
+                    t.should.be(val);
+                });
+                
+                callNum.should.be(1); // first auto call
+                
+                b.c.c.f("tada").d = val = "b";
+                callNum.should.be(2); // bind
+                
+                val = b2.c.c.f("tada").d;
+                b.c = b2.c;
+                callNum.should.be(3);
+                
+                b.c.c = b2.c.c;
+                callNum.should.be(3);
+                
+                unbind();
+                b.c.c.f("tada").d = "c";
+                callNum.should.be(3);
+            });
+            
+            it("BindExt.chain should bind chain changes (1 gap)", {
+                b.c.nc.c.f("tada").d = "a";
+                var unbind = BindExt.chain(b.c.nc.c.f("tada").d, function (_, t:String) {
+                    callNum++;
+                    t.should.be(val);
                 });
                 
                 callNum.should.be(1);
                 
-                b.c.f("tada").d = "b";
+                b.c.nc.c.f("tada").d = val = "b";
                 callNum.should.be(2);
                 
                 unbind();
-                b.c.f("tada").d = "c";
+                b.c.nc.c.f("tada").d = "c";
                 callNum.should.be(2);
             });
             
@@ -88,11 +112,17 @@ class BindableChain implements bindx.IBindable {
     @:bindable
     public var c:BindableChain;
     
+    public var nc:BindableChain;
+    
     @:bindable
     public function f(s:String):BindableChain {
         return c;
     }
     
-    public function new() {
+    public function new(depth:Int) {
+        if (depth > 0) {
+            c = new BindableChain(depth - 1);
+            nc = new BindableChain(depth - 1);
+        }
     }
 }

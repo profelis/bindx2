@@ -72,7 +72,7 @@ class BindExt {
         
         var res = macro
             $b { chain.bind.concat(chain.init).concat([macro function __unbind__():Void { $b { chain.unbind } }]) };
-        //trace(new Printer().printExpr(res));
+        trace(new Printer().printExpr(res));
         return res;
     }
     
@@ -93,7 +93,7 @@ class BindExt {
             var listenerName = 'listener${i+1}';
             var listenerNameExpr = macro $i { listenerName };
             
-            var value = 'value${i+1}';
+            var value = 'value${i}';
             var valueExpr = macro $i { value };
             
             var fieldName = prev.field.name;
@@ -103,52 +103,57 @@ class BindExt {
             var fieldListener:Expr;
             if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
             
-            if (field.bindable) {
-                var type = Context.typeof(field.e).toComplexType();
+            var type = Context.typeof(field.e).toComplexType();
+            var unbind:Expr;
+            
+            
+            if (prev.bindable) {
+                unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
+                
                 res.bind.push(macro var $value:Null<$type> = null );
-                var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
-                fieldListenerBody.push(macro 
+                res.unbind.push(macro if ($valueExpr != null) { $unbind; $valueExpr = null; } );
+                
+                fieldListenerBody.push(macro
                     if (n != null) {
                         $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) }
                         $prevListenerNameExpr($a { prev.params != null ? [] : [macro n.$fieldName, macro n.$fieldName] } );
                     }
                 );
-                if (field.params != null) {
-                    fieldListenerBody.unshift(macro var n:Null<$type> = $valueExpr = $e );
-                    fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
-                    
-                    fieldListener = macro function $listenerName ():Void {
-                        $b { fieldListenerBody };
-                    };
+            } else {
+                fieldListenerBody.push(macro
+                    if (n != null) {
+                        $prevListenerNameExpr($a { prev.params != null ? [] : [macro n.$fieldName, macro n.$fieldName] } );
+                    }
+                );
+            }
+        
+            if (field.params != null) {
+                if (prev.bindable) {
+                    if (field.bindable) {
+                        fieldListenerBody.unshift(macro $valueExpr = n );
+                        fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
+                    } else {
+                        fieldListenerBody.unshift(macro if (n != null) ${BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro n, prev.field, prevListenerNameExpr )} );
+                    }
                 }
-                else {
+                fieldListenerBody.unshift(macro var n:Null<$type> = $e );
+                
+                fieldListener = macro function $listenerName ():Void $b { fieldListenerBody };
+            }
+            else {
+                
+                if (prev.bindable) {
                     fieldListenerBody.unshift(macro $valueExpr = n );
                     fieldListenerBody.unshift(macro if ($valueExpr != null) $unbind );
                     fieldListenerBody.unshift(macro if (o != null) ${BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )} );
-                    
-                    fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void {
-                        $b { fieldListenerBody };
-                    };
                 }
-                res.bind.push(fieldListener);
                 
-                res.unbind.push(macro if ($valueExpr != null) { $unbind; $valueExpr = null; } );
+                fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void
+                    $b { fieldListenerBody };
             }
-            else {
-                //trace(printer.printExpr(field.e) + " . " + field.field.name);
-                /*if (field.params != null) {
-                    fieldListenerBody.unshift(macro var n = $e );
-                    
-                    fieldListener = macro function $listenerName () {
-                        $b { fieldListenerBody };
-                    };
-                }
-                else {
-                    fieldListener = macro function $listenerName (o, n) {
-                        $b { fieldListenerBody };
-                    };
-                }*/
-            }
+        
+            res.bind.push(fieldListener);
+            
             prevListenerName = listenerName;
             prevListenerNameExpr = listenerNameExpr;
         }
@@ -157,10 +162,8 @@ class BindExt {
             Context.error("Chain is not bindable", pos);
         }
         
-        var bind = BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l );
-        var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l );
-        res.init.push(bind);
-        res.unbind.push(unbind);
+        res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
+        res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
         if (zeroListener.f.params != null) {
             res.init.push(macro ${zeroListener.l}());
         }
