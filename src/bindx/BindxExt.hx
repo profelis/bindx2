@@ -71,7 +71,7 @@ class BindExt {
         var chain = prepareBindChain(fields, listener, expr.pos);
         
         var res = macro
-            $b { chain.bind.concat(chain.init).concat([macro function __unbind__():Void { $b { chain.unbind } }]) };
+            $b { chain.bind.concat(chain.init).concat([macro function __unbind__():Void $b { chain.unbind } ]) };
         trace(new Printer().printExpr(res));
         return res;
     }
