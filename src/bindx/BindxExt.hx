@@ -105,7 +105,7 @@ class BindExt {
             
             var type = Context.typeof(field.e).toComplexType();
             
-            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro null, macro n.$fieldName] } );
+            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro null, macro n != null ? n.$fieldName : null] } );
             if (prev.bindable) {
                 var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
                 
@@ -114,13 +114,10 @@ class BindExt {
                 
                 fieldListenerBody.push(macro if ($valueExpr != null) $unbind );
                 fieldListenerBody.push(macro $valueExpr = n );
-                fieldListenerBody.push(macro if (n != null) {
-                    $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) }
-                    $callPrev;
-                });
-            } else {
-                fieldListenerBody.push(macro if (n != null) $callPrev );
+                fieldListenerBody.push(macro if (n != null)
+                    $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
+            fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
                 fieldListenerBody.unshift(macro var n:Null<$type> = try $e catch (e:Dynamic) null );
