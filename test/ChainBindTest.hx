@@ -63,9 +63,25 @@ class ChainBindTest extends BuddySuite {
                 b.c.nc.c.f("tada").d = val = "b";
                 callNum.should.be(2);
                 
+                b2.c.nc.c.f("tada").d = val = "c";
+                var t = b.c;
+                b.c = b2.c;
+                
+                callNum.should.be(3);
+                
+                val = t.nc.c.f("tada").d;
+                b.c = t;
+                
+                callNum.should.be(4);
+                
+                b2.c.nc.c.f("tada").d = val = "d";
+                
+                b.c.nc.c = b2.c.nc.c;
+                callNum.should.be(5);
+                
                 unbind();
                 b.c.nc.c.f("tada").d = "c";
-                callNum.should.be(2);
+                callNum.should.be(5);
             });
             
             it("BindExt.chain should bind chain changes (double gap)", {
@@ -117,6 +133,10 @@ class BindableChain implements bindx.IBindable {
     @:bindable
     public function f(s:String):BindableChain {
         return c;
+    }
+    
+    public function nf(s:String):BindableChain {
+        return nc;
     }
     
     public function new(depth:Int) {
