@@ -40,7 +40,8 @@ class BindExt {
     
     public static function internalBindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
-        var chain = prepareChain(expr, macro $i{ zeroListener });
+        var chain = null;
+        try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:bindx.Error) e.contextError();
         
         var res = macro (function ($zeroListener):Void->Void
             $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
@@ -85,10 +86,13 @@ class BindExt {
                 var zeroListener = listenerName(0, pre);
                 chain.init.push(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
                 
-                var c = prepareChain(start, macro $i{zeroListener}, pre);
-                chain.init = chain.init.concat(c.init);
-                chain.bind = chain.bind.concat(c.bind);
-                chain.unbind = chain.unbind.concat(c.unbind);
+                var c = null;
+                try { c = warnPrepareChain(start, macro $i{zeroListener}, pre); } catch (e:bindx.Error) { e.contextWarning(); }
+                if (c != null) {
+                    chain.init = chain.init.concat(c.init);
+                    chain.bind = chain.bind.concat(c.bind);
+                    chain.unbind = chain.unbind.concat(c.unbind);
+                }
             }
             e.iter(findChain);
         }
@@ -119,23 +123,16 @@ class BindExt {
         var prevField = {e:first.e, field:first.field, error:null};
         var fields:Array<FieldExpr> = [ { field:first.field, bindable:true, e:first.e } ];
         
-        inline function tryCheck(e:Expr) {
-            var field = null;
-            try  { field = Bind.tryCheckField(e); } catch (e:FatalError) e.contextFatal();
-            return field;
-        }
-        
         while (true) {
-            var field = tryCheck(prevField.e);
+            var field = Bind.checkField(prevField.e);
             if (field.field != null) {
                 fields.push( { field:field.field, bindable:field.error == null, e:field.e } );
             } else if (field.error != null) {
                 var end = true;
                 switch (prevField.e.expr) {
                     case ECall(e, params):
-                        field = tryCheck(e);
-                        if (field.error != null) field.error.contextError();
-                        if (field.field == null) Context.fatalError('error parse fields ${e.toString()}', e.pos);
+                        field = Bind.checkField(e);
+                        if (field.field == null) throw new FatalError('error parse fields ${e.toString()}', e.pos);
                         fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
                         end = false;
                     case _:
@@ -148,11 +145,13 @@ class BindExt {
         return fields;
     }
     
-    static function prepareChain(expr:Expr, listener:Expr, prefix = ""):Chain {
+    static function warnPrepareChain(expr:Expr, listener:Expr, prefix = ""):Chain {
         var fields = checkFields(expr);
 
-        if (fields.length == 0)
-            Context.fatalError("can't bind empty expression", expr.pos);
+        if (fields.length == 0) {
+            throw new FatalError("can't bind empty expression: " + expr.toString(), expr.pos);
+            return null;
+        }
 
         var i = fields.length;
         var first = null;
@@ -161,15 +160,20 @@ class BindExt {
             if (first != null) f.bindable = false;
             else if (!f.bindable && first == null) first = f;
         }
+        var bindableNum = fields.fold(function (it, n) return n += it.bindable ? 1 : 0, 0);
+        if (bindableNum == 0) {
+            throw new bindx.Error('expr is not bindable "${expr.toString()}".', expr.pos);
+            return null;
+        }
         if (first != null)
-            Context.warning('expr in not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
+            Context.warning('expr is not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
         
-        return prepareBindChain(fields, macro listener, expr.pos, prefix);
+        return prepareChain(fields, macro listener, expr.pos, prefix);
     }
     
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
-    public static function prepareBindChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
+    static function prepareChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
         var res:Chain = { init:[], bind:[], unbind:[] };
         
         var prevListenerName = listenerName(0, prefix);

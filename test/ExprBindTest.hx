@@ -24,9 +24,9 @@ class ExprBindTest extends BuddySuite {
                 var b = new BaseTest.Bindable1();
                 a.str = "a1";
                 b.str = "b1";
-                inline function val() return a.str + b.str;
+                inline function val() return a.str + b.str + "ab".charAt(0);
                 
-                BindExt.expr(a.str + b.str, function (from, to:String) {
+                BindExt.expr(a.str + b.str + "ab".charAt(0), function (from, to:String) {
                     //trace(from);
                     to.should.be(val());
                     callNum ++;
@@ -37,6 +37,10 @@ class ExprBindTest extends BuddySuite {
                 a.str = "a2";
                 
                 callNum.should.be(2);
+                
+                b.str = "b2";
+                
+                callNum.should.be(3);
             });
             
         });

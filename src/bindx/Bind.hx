@@ -38,20 +38,23 @@ class Bind {
 	#if macro
 
 	public static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
-		var fieldData = checkField(field);
+		var fieldData = warnCheckField(field);
 		return if (fieldData != null) {
 			if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
 			else BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
-		} else macro {};
+		} else {
+			Context.fatalError('can\'t bind field ${field.expr}', field.pos);
+			macro {};
+		}
 	}
 
 	public static function internalBindTo(field:Expr, target:Expr):Expr {
-		var fieldData = checkField(field);
+		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
 	}
 
 	public static function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
-		var fieldData = checkField(field);
+		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
 
@@ -63,19 +66,20 @@ class Bind {
 		return BindMacros.bindingSignalProvider.getUnbindAllExpr(object, type);
 	}
 
-	public static function checkField(field:Expr):{e:Expr, field:ClassField} {
+	static function warnCheckField(field:Expr):{e:Expr, field:ClassField} {
 		var res = null;
 		try {
-			res = tryCheckField(field);
-			if (res.error != null)
-				res.error.contextError();
+			res = checkField(field);
+			if (res.error != null) throw res.error;
+		} catch (e:FatalError) {
+			e.contextFatal();
 		} catch (e:bindx.Error) { 
 			e.contextError();
 		};
 		return res;
 	}
 	
-	public static function tryCheckField(field:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
+	public static function checkField(field:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
 		var error:bindx.Error;
 		switch (field.expr) {
 			case EField(e, field):
@@ -101,12 +105,11 @@ class Bind {
 				return {e:e, field:field, error:error};
 
             case EConst(CIdent(_)):
-            	return {e:field, field:null, error:new bindx.Error('can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos)};
+            	return {e:field, field:null, error:new bindx.Error('Can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos)};
 
 			case _:
-				return {e:field, field:null, error:new bindx.Error('can\'t bind field \'${field.toString()}\'', field.pos)};
 		}
-		return null;
+		return {e:field, field:null, error:new bindx.Error('Can\'t bind field \'${field.toString()}\'', field.pos)};
 	}
 	
 	public static function isBindable(classType:ClassType):Bool {
