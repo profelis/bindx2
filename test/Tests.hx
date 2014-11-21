@@ -16,6 +16,7 @@ class Tests extends BuddySuite {
             new SignalTest(),
             new TestProperty(),
             new ChainBindTest(),
+            new ExprBindTest(),
         ], reporter);
 
         runner.run();

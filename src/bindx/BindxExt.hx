@@ -18,15 +18,102 @@ typedef FieldExpr = {
     @:optional var params:Array<Expr>;
 }
 
+typedef Chain = {
+    var init:Array<Expr>;
+    var bind:Array<Expr>;
+    var unbind:Array<Expr>;
+}
+
 #end
 @:access(bindx.BindMacros)
 class BindExt {
+    
+    @:noUsing macro static public function expr(expr:Expr, listener:Expr):Expr {
+        return internalBindExpr(expr, listener);
+    }
     
     @:noUsing macro static public function chain(expr:Expr, listener:Expr):Expr {
         return internalBindChain(expr, listener);
     }
     
     #if macro
+    
+    public static function internalBindChain(expr:Expr, listener:Expr):Expr {
+        var zeroListener = listenerName(0, "");
+        var chain = prepareChain(expr, macro $i{ zeroListener });
+        
+        var res = macro (function ($zeroListener):Void->Void
+            $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
+        )($listener);
+        //trace(new Printer().printExpr(res));
+        return res;
+    }
+    
+    public static function internalBindExpr(expr:Expr, listener:Expr):Expr {
+        var type = Context.typeof(expr).toComplexType();
+        var listenerNameExpr = macro listener;
+        var fieldListenerName = "fieldListener";
+        var fieldListenerNameExpr = macro $i{fieldListenerName};
+        var methodListenerName = "methodListener";
+        var methodListenerNameExpr = macro $i{methodListenerName};
+        var chain:Chain = { init:[], bind:[], unbind:[] };
+        
+        var prefix = 0;
+        function findChain(expr:Expr) {
+            var ch = [];
+            var isChain;
+            var e = expr;
+            var start = expr;
+            var ecall = false;
+            do {
+                isChain = false;
+                switch (e.expr) {
+                    case EField(le, _): 
+                        isChain = true;
+                        e = le;
+                    case ECall(le, params):
+                        for (p in params) findChain(p);
+                        isChain = true;
+                        ecall = true;
+                        e = le;
+                    case _:
+                }
+                
+            } while (isChain);
+            if (e != start) {
+                var pre = '_${prefix++}';
+                var zeroListener = listenerName(0, pre);
+                chain.init.push(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
+                
+                var c = prepareChain(start, macro $i{zeroListener}, pre);
+                chain.init = chain.init.concat(c.init);
+                chain.bind = chain.bind.concat(c.bind);
+                chain.unbind = chain.unbind.concat(c.unbind);
+            }
+            e.iter(findChain);
+        }
+        findChain(expr);
+        
+        var zeroListener = listenerName(0, "");
+        
+        var callListener = switch (type) {
+            case macro : Void: macro if (!init) $i{zeroListener}();
+            case _: macro if (!init) $i{zeroListener}(null, try { $expr; } catch (e:Dynamic) { null; }); 
+        }
+        
+        var fieldListener = macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener;
+        var methodListener = macro function $methodListenerName() $callListener;
+        
+        var base = [(macro var init = true), fieldListener, methodListener];
+        
+        var res = macro (function ($zeroListener):Void->Void
+            $b { base.concat(chain.bind).concat(chain.init).concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
+        )($listener);
+        
+        trace(new Printer().printExpr(res));
+        return res;
+    }
+    
     static function checkFields(expr:Expr):Array<FieldExpr> {
         var first = Bind.checkField(expr);
         var prevField = {e:first.e, field:first.field, error:null};
@@ -61,7 +148,7 @@ class BindExt {
         return fields;
     }
     
-    public static function internalBindChain(expr:Expr, listener:Expr):Expr {
+    static function prepareChain(expr:Expr, listener:Expr, prefix = ""):Chain {
         var fields = checkFields(expr);
 
         if (fields.length == 0)
@@ -77,33 +164,25 @@ class BindExt {
         if (first != null)
             Context.warning('expr in not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
         
-        var chain = prepareBindChain(fields, macro listener, expr.pos);
-        
-        var res = macro (function (listener):Void->Void
-            $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
-        )($listener);
-        //trace(new Printer().printExpr(res));
-        return res;
+        return prepareBindChain(fields, macro listener, expr.pos, prefix);
     }
     
-    static var ZERO_LISTENER = "listener0";
+    inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
-    public static function prepareBindChain(fields:Array<FieldExpr>, listener:Expr, pos:Position):{init:Array<Expr>, bind:Array<Expr>, unbind:Array<Expr>} {
-        var res = { init:[], bind:[], unbind:[] };
-
-        res.bind.push(macro var $ZERO_LISTENER = $ { listener } );
+    public static function prepareBindChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
+        var res:Chain = { init:[], bind:[], unbind:[] };
         
-        var prevListenerName = ZERO_LISTENER;
+        var prevListenerName = listenerName(0, prefix);
         var prevListenerNameExpr = macro $i { prevListenerName };
         var zeroListener = fields[0].bindable ? { f:fields[0], l:prevListenerNameExpr } : null;
         var i = -1;
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
-            var listenerName = 'listener${i+1}';
+            var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
-            var value = 'value${i}';
+            var value = '${prefix}value${i}';
             var valueExpr = macro $i { value };
             
             var fieldName = prev.field.name;
@@ -164,6 +243,18 @@ class BindExt {
             res.init.push(macro $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ));
         }
         return res;
+    }
+    
+    static function traceChain(c:Chain) {
+        var p = new Printer();
+        function iter(exprs:Array<Expr>, name) {
+            trace('::$name::');
+            for (e in exprs) trace(p.printExpr(e));
+        }
+        
+        iter(c.init, "init");
+        iter(c.bind, "bind");
+        iter(c.unbind, "unbind");
     }
     #end
     
