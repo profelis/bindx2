@@ -16,17 +16,59 @@ class ChainBindTest extends BuddySuite {
             
             var val:String;
             var b:BindableChain;
-            var b2:BindableChain;
             var callNum:Int;
             
             before({
                 val = "a";
                 b = new BindableChain(4);
-                b2 = new BindableChain(4);
                 callNum = 0;
             });
             
+            it("BindExt.chain should bind chain changes (unset links)", {
+                b.c.c.d = val;
+                
+                var unbind = BindExt.chain(b.c.c.d, function (_, t:String) {
+                    callNum++;
+                    t.should.be(val);
+                });
+                
+                callNum.should.be(1);
+                
+                val = null;
+                b.c = null;
+                callNum.should.be(2);
+                
+                b.c = new BindableChain(2);
+                callNum.should.be(3); // d null value change to null value
+                
+                b.c.c.d = val = "b";
+                callNum.should.be(4);
+                
+                val = null;
+                b.c.c = null;
+                callNum.should.be(5);
+            });
+            
+            it("BindExt.chain should bind chain changes (null links)", {
+                b.c = null;
+                val = null;
+                
+                var unbind = BindExt.chain(b.c.c.d, function (_, t:String) {
+                    callNum++;
+                    t.should.be(val);
+                });
+                
+                callNum.should.be(1);
+                
+                b.c = new BindableChain(2);
+                callNum.should.be(2);
+                
+                b.c.c.d = val = "b";
+                callNum.should.be(3);
+            });
+            
             it("BindExt.chain should bind chain changes (0 gap)", {
+                var b2 = new BindableChain(4);
                 b.c.c.f("tada").d = val;
                 b2.c.c.f("tada").d = val;
                 var unbind = BindExt.chain(b.c.c.f("tada").d, function (_, t:String) {
@@ -60,38 +102,59 @@ class ChainBindTest extends BuddySuite {
                 
                 callNum.should.be(1);
                 
-                b.c.nc.c.f("tada").d = val = "b";
-                callNum.should.be(2);
+                b.c.nc.c.f("tada").d = val = "b"; // nc gap
+                callNum.should.be(1);
                 
+                var b2 = new BindableChain(4);
                 b2.c.nc.c.f("tada").d = val = "c";
                 var t = b.c;
                 b.c = b2.c;
                 
-                callNum.should.be(3);
+                callNum.should.be(2);
                 
                 val = t.nc.c.f("tada").d;
                 b.c = t;
                 
-                callNum.should.be(4);
+                callNum.should.be(3);
                 
                 b2.c.nc.c.f("tada").d = val = "d";
                 
                 b.c.nc.c = b2.c.nc.c;
-                callNum.should.be(5);
+                callNum.should.be(3); // nc gap
                 
                 unbind();
                 b.c.nc.c.f("tada").d = "c";
-                callNum.should.be(5);
+                callNum.should.be(3);
             });
             
             it("BindExt.chain should bind chain changes (double gap)", {
-                b.c.d = "a";
+                b.c.nc.nc.d = "a";
                 
-                BindExt.chain(b.c.d, function (_, _) callNum++);
+                BindExt.chain(b.c.nc.nc.d, function (_, t:String) {
+                    callNum++;
+                    t.should.be(val);
+                });
                 
                 callNum.should.be(1);
                 
+                var b2 = new BindableChain(2);
                 b2.d = "b";
+                b.c.nc.nc = b2;
+                
+                callNum.should.be(1);
+                
+                b2 = new BindableChain(3);
+                b2.nc.d = "c";
+                b.c.nc = b2;
+                
+                callNum.should.be(1);
+                
+                b.c.nc.nc.d = val = "d";
+                
+                callNum.should.be(1);
+                
+                b2 = new BindableChain(3);
+                b2.nc.nc.d = val = "e";
                 b.c = b2;
                 
                 callNum.should.be(2);

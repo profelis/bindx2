@@ -68,11 +68,28 @@ class BindExt {
     
     public static function internalBindChain(expr:Expr, listener:Expr):Expr {
         var fields = checkFields(expr);
+        if (fields.length == 0)
+            Context.fatalError("can't bind empty expression", expr.pos);
+        var flag = false;
+        var i = fields.length;
+        var first = null;
+        while (i-- > 0) {
+            var f = fields[i];
+            if (flag) f.bindable = false;
+            else if (!f.bindable) {
+                flag = true;
+                if (first == null) first = f;
+            }
+        }
+        if (flag) {
+            Context.warning('expr in not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
+        }
+        
         var chain = prepareBindChain(fields, listener, expr.pos);
         
         var res = macro
             $b { chain.bind.concat(chain.init).concat([macro function __unbind__():Void $b { chain.unbind } ]) };
-        trace(new Printer().printExpr(res));
+        //trace(new Printer().printExpr(res));
         return res;
     }
     
@@ -105,7 +122,6 @@ class BindExt {
             
             var type = Context.typeof(field.e).toComplexType();
             
-            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro null, macro n != null ? n.$fieldName : null] } );
             if (prev.bindable) {
                 var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
                 
@@ -117,6 +133,7 @@ class BindExt {
                 fieldListenerBody.push(macro if (n != null)
                     $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
+            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro null, macro n != null ? n.$fieldName : null] } );
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
@@ -140,7 +157,7 @@ class BindExt {
             prevListenerNameExpr = listenerNameExpr;
         }
         
-        if (zeroListener == null) {
+        if (zeroListener == null || zeroListener.f.bindable == false) {
             Context.error("Chain is not bindable", pos);
         }
         
