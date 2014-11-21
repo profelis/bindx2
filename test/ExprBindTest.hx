@@ -27,7 +27,6 @@ class ExprBindTest extends BuddySuite {
                 inline function val() return a.str + b.str + "ab".charAt(0);
                 
                 BindExt.expr(a.str + b.str + "ab".charAt(0), function (from, to:String) {
-                    //trace(from);
                     to.should.be(val());
                     callNum ++;
                 });

@@ -162,6 +162,10 @@ class ChainBindTest extends BuddySuite {
                 b.c = b2;
                 
                 callNum.should.be(2);
+                
+                Bind.notify(b.c.nc.nc.d, val, val = "f");
+                
+                callNum.should.be(2);
             });
             
             it("BindExt.chain should bind default fields", {
