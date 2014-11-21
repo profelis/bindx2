@@ -98,7 +98,7 @@ class BindExt {
         
         var callListener = switch (type) {
             case macro : Void: macro if (!init) $i{zeroListener}();
-            case _: macro if (!init) $i{zeroListener}(null, try { $expr; } catch (e:Dynamic) { null; }); 
+            case _: macro if (!init) { var v = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}(null, v); }; 
         }
         
         var fieldListener = macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener;
