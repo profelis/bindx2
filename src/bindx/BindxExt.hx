@@ -34,9 +34,7 @@ class BindExt {
         
         inline function tryCheck(e:Expr) {
             var field = null;
-            try {
-                field = Bind.tryCheckField(e);
-            } catch (e:FatalError) e.contextFatal();
+            try  { field = Bind.tryCheckField(e); } catch (e:FatalError) e.contextFatal();
             return field;
         }
         
@@ -49,10 +47,8 @@ class BindExt {
                 switch (prevField.e.expr) {
                     case ECall(e, params):
                         field = tryCheck(e);
-                        // TODO: test
                         if (field.error != null) field.error.contextError();
-                        if (field.field == null)
-                            Context.fatalError('error parse fields ${e.toString()}', e.pos);
+                        if (field.field == null) Context.fatalError('error parse fields ${e.toString()}', e.pos);
                         fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
                         end = false;
                     case _:
@@ -67,8 +63,10 @@ class BindExt {
     
     public static function internalBindChain(expr:Expr, listener:Expr):Expr {
         var fields = checkFields(expr);
+
         if (fields.length == 0)
             Context.fatalError("can't bind empty expression", expr.pos);
+
         var i = fields.length;
         var first = null;
         while (i-- > 0) {
@@ -79,8 +77,7 @@ class BindExt {
         if (first != null)
             Context.warning('expr in not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
         
-        var listenerExpr = macro listener;
-        var chain = prepareBindChain(fields, listenerExpr, expr.pos);
+        var chain = prepareBindChain(fields, macro listener, expr.pos);
         
         var res = macro (function (listener):Void->Void
             $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
@@ -98,7 +95,7 @@ class BindExt {
         
         var prevListenerName = ZERO_LISTENER;
         var prevListenerNameExpr = macro $i { prevListenerName };
-        var zeroListener = { f:fields[0], l:prevListenerNameExpr };
+        var zeroListener = fields[0].bindable ? { f:fields[0], l:prevListenerNameExpr } : null;
         var i = -1;
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
@@ -153,12 +150,12 @@ class BindExt {
             prevListenerNameExpr = listenerNameExpr;
         }
         
-        if (zeroListener == null || zeroListener.f.bindable == false) {
+        if (zeroListener == null || zeroListener.f.bindable == false)
             Context.error("Chain is not bindable", pos);
-        }
         
         res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
+
         if (zeroListener.f.params != null) {
             res.init.push(macro ${zeroListener.l}());
         }
