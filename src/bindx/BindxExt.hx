@@ -1,13 +1,12 @@
 package bindx;
-import haxe.macro.Context;
-import haxe.macro.Printer;
 
 #if macro
-
 
 import bindx.Error;
 import haxe.macro.Expr;
 import haxe.macro.Type;
+import haxe.macro.Context;
+import haxe.macro.Printer;
 
 using Lambda;
 using haxe.macro.Tools;
@@ -70,25 +69,22 @@ class BindExt {
         var fields = checkFields(expr);
         if (fields.length == 0)
             Context.fatalError("can't bind empty expression", expr.pos);
-        var flag = false;
         var i = fields.length;
         var first = null;
         while (i-- > 0) {
             var f = fields[i];
-            if (flag) f.bindable = false;
-            else if (!f.bindable) {
-                flag = true;
-                if (first == null) first = f;
-            }
+            if (first != null) f.bindable = false;
+            else if (!f.bindable && first == null) first = f;
         }
-        if (flag) {
+        if (first != null)
             Context.warning('expr in not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
-        }
         
-        var chain = prepareBindChain(fields, listener, expr.pos);
+        var listenerExpr = macro listener;
+        var chain = prepareBindChain(fields, listenerExpr, expr.pos);
         
-        var res = macro
-            $b { chain.bind.concat(chain.init).concat([macro function __unbind__():Void $b { chain.unbind } ]) };
+        var res = macro (function (listener):Void->Void
+            $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
+        )($listener);
         //trace(new Printer().printExpr(res));
         return res;
     }

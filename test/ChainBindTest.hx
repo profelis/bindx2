@@ -27,10 +27,11 @@ class ChainBindTest extends BuddySuite {
             it("BindExt.chain should bind chain changes (unset links)", {
                 b.c.c.d = val;
                 
-                var unbind = BindExt.chain(b.c.c.d, function (_, t:String) {
+                var listener = function (_, t:String) {
                     callNum++;
                     t.should.be(val);
-                });
+                };
+                var unbind = BindExt.chain(b.c.c.d, listener);
                 
                 callNum.should.be(1);
                 
@@ -88,9 +89,12 @@ class ChainBindTest extends BuddySuite {
                 b.c.c = b2.c.c;
                 callNum.should.be(3);
                 
+                Bind.notify(b.c.c.f);
+                callNum.should.be(4);
+                
                 unbind();
                 b.c.c.f("tada").d = "c";
-                callNum.should.be(3);
+                callNum.should.be(4);
             });
             
             it("BindExt.chain should bind chain changes (1 gap)", {
@@ -108,22 +112,22 @@ class ChainBindTest extends BuddySuite {
                 var b2 = new BindableChain(4);
                 b2.c.nc.c.f("tada").d = val = "c";
                 var t = b.c;
-                b.c = b2.c;
+                b.c = b2.c; // bind works
                 
                 callNum.should.be(2);
                 
                 val = t.nc.c.f("tada").d;
-                b.c = t;
+                b.c = t; // bind works
                 
                 callNum.should.be(3);
                 
                 b2.c.nc.c.f("tada").d = val = "d";
                 
-                b.c.nc.c = b2.c.nc.c;
-                callNum.should.be(3); // nc gap
+                b.c.nc.c = b2.c.nc.c; // nc gap
+                callNum.should.be(3);
                 
                 unbind();
-                b.c.nc.c.f("tada").d = "c";
+                b.c.nc.c.f("tada").d = "c"; // nc gap
                 callNum.should.be(3);
             });
             
@@ -195,11 +199,11 @@ class BindableChain implements bindx.IBindable {
     
     @:bindable
     public function f(s:String):BindableChain {
-        return c;
+        return s == "tada" ? c : null;
     }
     
     public function nf(s:String):BindableChain {
-        return nc;
+        return s == "tada" ? nc : null;
     }
     
     public function new(depth:Int) {
