@@ -9,6 +9,7 @@ import haxe.macro.Context;
 import haxe.macro.Printer;
 
 using Lambda;
+using StringTools;
 using haxe.macro.Tools;
 
 typedef FieldExpr = {
@@ -59,7 +60,7 @@ class BindExt {
         var methodListenerName = "methodListener";
         var methodListenerNameExpr = macro $i{methodListenerName};
         var chain:Chain = { init:[], bind:[], unbind:[], expr:expr };
-        var binded:Map<String, Bool> = new Map();
+        var binded:Map<String, {prebind:Expr, c:Chain, e:Expr}> = new Map();
         
         var prefix = 0;
         function findChain(expr:Expr) {
@@ -92,20 +93,47 @@ class BindExt {
                 if (c != null) {
                     var key = c.expr.toString();
                     if (!binded.exists(key)) {
-                        binded.set(key, true);
-                        Context.warning('Bind ${start.toString()}', start.pos);
-                        chain.bind.unshift(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
-                        chain.init = chain.init.concat(c.init);
-                        chain.bind = chain.bind.concat(c.bind);
-                        chain.unbind = chain.unbind.concat(c.unbind);
-                    } else {
-                        Context.warning("skip second bind " + c.expr.toString(), start.pos);
+                        var prebind = macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr};
+                        binded.set(key, {prebind:prebind, c:c, e:start});
+                    }
+                    else {
+                        //trace("skip second bind " + key);
+                        //Context.warning("skip second bind " + key, c.expr.pos);
                     }
                 }
             }
-            e.iter(findChain);
+            expr.iter(findChain);
         }
         findChain(expr);
+        
+        var keys = [for (k in binded.keys()) k];
+        var i = 0;
+        while (i < keys.length) {
+            var k = keys[i];
+            var j = i;
+            var remove = false;
+            while (++j < keys.length) {
+                if (keys[j].startsWith(k)) {
+                    remove = true;
+                    break;
+                }
+            }
+            if (remove) {
+                keys = keys.splice(i, 1);
+                //Context.warning("skip second bind " + k, binded.get(k).e.pos);
+            }
+            else i++;
+        }
+        
+        for (k in keys) {
+            var data = binded.get(k);
+            Context.warning('Bind ${data.e.toString()}', data.e.pos);
+            chain.bind.unshift(data.prebind);
+            var c = data.c;
+            chain.init = chain.init.concat(c.init);
+            chain.bind = chain.bind.concat(c.bind);
+            chain.unbind = chain.unbind.concat(c.unbind);
+        }
         
         var zeroListener = listenerName(0, "");
         
@@ -206,7 +234,7 @@ class BindExt {
         var zeroListener = fields[0].bindable ? { f:fields[0], l:prevListenerNameExpr } : null;
         if (zeroListener != null) {
             var fn = zeroListener.f.field.name;
-            res.expr = macro ${zeroListener.f.e}.$fn;
+            res.expr = macro @:pos(zeroListener.f.e.pos) ${zeroListener.f.e}.$fn;
         }
         var i = -1;
         while (++i < fields.length - 1) {
@@ -229,7 +257,7 @@ class BindExt {
             }
             if (prev.bindable && res.expr == null) {
                     var fn = prev.field.name;
-                    res.expr = macro ${prev.e}.$fn;
+                    res.expr = macro @:pos(prev.e.pos) ${prev.e}.$fn;
             }
             
             var type = Context.typeof(field.e).toComplexType();
