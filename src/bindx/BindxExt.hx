@@ -84,11 +84,11 @@ class BindExt {
             if (e != start) {
                 var pre = '_${prefix++}';
                 var zeroListener = listenerName(0, pre);
-                chain.init.push(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
-                
+
                 var c = null;
                 try { c = warnPrepareChain(start, macro $i{zeroListener}, pre); } catch (e:bindx.Error) { e.contextWarning(); }
                 if (c != null) {
+                    chain.init.push(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
                     chain.init = chain.init.concat(c.init);
                     chain.bind = chain.bind.concat(c.bind);
                     chain.unbind = chain.unbind.concat(c.unbind);
@@ -120,6 +120,8 @@ class BindExt {
     
     static function checkFields(expr:Expr):Array<FieldExpr> {
         var first = Bind.checkField(expr);
+        if (first.field == null || first.error != null) return [];
+        
         var prevField = {e:first.e, field:first.field, error:null};
         var fields:Array<FieldExpr> = [ { field:first.field, bindable:true, e:first.e } ];
         
@@ -132,19 +134,19 @@ class BindExt {
                 switch (prevField.e.expr) {
                     case ECall(e, params):
                         field = Bind.checkField(e);
-                        if (field.field == null) throw new FatalError('Error parse ${e.toString()}.', e.pos);
-                        fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
+                        if (field.field == null) throw new FatalError('${e.toString()} is not bindable.', expr.pos);
+                        else fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
                         end = false;
                     case _:
                 }
                 if (end) break;
             }
             else if (field.e == null) {
-                throw new FatalError('Error parse ${prevField.e.toString()}.', prevField.e.pos);
+                throw new FatalError('${prevField.e.toString()} is not bindable.', expr.pos);
             }
             prevField = field;
         }
-        //for (it in fields) trace(printer.printExpr(it.e) + " -> " + it.field.name + (it.params != null ? '(${printer.printExprs(it.params, ",")})' : "") + "   bind:" + it.bindable);
+        
         return fields;
     }
     
@@ -171,6 +173,7 @@ class BindExt {
         if (first != null)
             Context.warning('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos);
         
+        //trace(fields);
         return prepareChain(fields, macro listener, expr.pos, prefix);
     }
     
@@ -186,6 +189,7 @@ class BindExt {
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
+            trace(prev.field);
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             

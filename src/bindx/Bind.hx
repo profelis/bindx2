@@ -79,14 +79,19 @@ class Bind {
 		return res;
 	}
 	
-	public static function checkField(field:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
+	public static function checkField(f:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
 		var error:bindx.Error;
-		switch (field.expr) {
+		switch (f.expr) {
 			case EField(e, field):
-				var classType = Context.typeof(e).follow().getClass();
+				var type = Context.typeof(e);
+				var classType = null;
+				switch (type) {
+					case TInst(c, _): classType = c.get();
+					case _:
+				}
 				if (classType == null) {
-					throw new FatalError('Type \'${e.toString()}\' is unknown', e.pos);
-					return null;
+					error = new FatalError('Type \'${e.toString()}\' is unknown', e.pos);
+					return {e:f, field:null, error:error};
 				}
 				if (!isBindable(classType)) {
 					error = new bindx.Error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
@@ -105,11 +110,11 @@ class Bind {
 				return {e:e, field:field, error:error};
 
             case EConst(CIdent(_)):
-            	return {e:field, field:null, error:new bindx.Error('Can\'t bind \'${field.toString()}\'. Please use \'this.${field.toString()}\'', field.pos)};
+            	return {e:f, field:null, error:new bindx.Error('Can\'t bind \'${f.toString()}\'. Please use \'this.${f.toString()}\'', f.pos)};
 
 			case _:
 		}
-		return {e:field, field:null, error:new bindx.Error('Can\'t bind field \'${field.toString()}\'', field.pos)};
+		return {e:f, field:null, error:new bindx.Error('Can\'t bind field \'${f.toString()}\'', f.pos)};
 	}
 	
 	public static function isBindable(classType:ClassType):Bool {
