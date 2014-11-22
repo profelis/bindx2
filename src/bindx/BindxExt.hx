@@ -60,7 +60,7 @@ class BindExt {
         var methodListenerName = "methodListener";
         var methodListenerNameExpr = macro $i{methodListenerName};
         var chain:Chain = { init:[], bind:[], unbind:[], expr:expr };
-        var binded:Map<String, {prebind:Expr, c:Chain, e:Expr}> = new Map();
+        var binded:Map<String, {prebind:Expr, c:Chain}> = new Map();
         
         var prefix = 0;
         function findChain(expr:Expr) {
@@ -89,12 +89,18 @@ class BindExt {
                 var pre = '_${prefix++}';
                 var zeroListener = listenerName(0, pre);
                 var c = null;
-                try { c = warnPrepareChain(start, macro $i{zeroListener}, pre, true); } catch (e:bindx.Error) { e.contextWarning(); }
+                try { 
+                    c = warnPrepareChain(start, macro $i { zeroListener }, pre, true); 
+                }
+                catch (e:bindx.Error) {
+                    Context.warning('${start.toString()} is not bindable.', e.pos);
+                    //e.contextWarning();
+                }
                 if (c != null) {
                     var key = c.expr.toString();
                     if (!binded.exists(key)) {
                         var prebind = macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr};
-                        binded.set(key, {prebind:prebind, c:c, e:start});
+                        binded.set(key, {prebind:prebind, c:c});
                     }
                     else {
                         //trace("skip second bind " + key);
@@ -127,7 +133,7 @@ class BindExt {
         
         for (k in keys) {
             var data = binded.get(k);
-            Context.warning('Bind ${data.e.toString()}', data.e.pos);
+            Context.warning('Bind ${data.c.expr.toString()}', data.c.expr.pos);
             chain.bind.unshift(data.prebind);
             var c = data.c;
             chain.init = chain.init.concat(c.init);
@@ -256,8 +262,8 @@ class BindExt {
                 
             }
             if (prev.bindable && res.expr == null) {
-                    var fn = prev.field.name;
-                    res.expr = macro @:pos(prev.e.pos) ${prev.e}.$fn;
+                var fn = prev.field.name;
+                res.expr = macro @:pos(prev.e.pos) ${prev.e}.$fn;
             }
             
             var type = Context.typeof(field.e).toComplexType();

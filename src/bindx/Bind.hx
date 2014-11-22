@@ -114,7 +114,7 @@ class Bind {
 
 			case _:
 		}
-		return {e:f, field:null, error:new bindx.Error('Can\'t bind \'${f.toString()}\'', f.pos)};
+		return {e:f, field:null, error:new bindx.Error('\'${f.toString()}\' is not bindable', f.pos)};
 	}
 	
 	public static function isBindable(classType:ClassType):Bool {
