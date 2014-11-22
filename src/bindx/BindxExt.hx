@@ -132,12 +132,15 @@ class BindExt {
                 switch (prevField.e.expr) {
                     case ECall(e, params):
                         field = Bind.checkField(e);
-                        if (field.field == null) throw new FatalError('error parse fields ${e.toString()}', e.pos);
+                        if (field.field == null) throw new FatalError('Error parse ${e.toString()}.', e.pos);
                         fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
                         end = false;
                     case _:
                 }
                 if (end) break;
+            }
+            else if (field.e == null) {
+                throw new FatalError('Error parse ${prevField.e.toString()}.', prevField.e.pos);
             }
             prevField = field;
         }
@@ -149,7 +152,7 @@ class BindExt {
         var fields = checkFields(expr);
 
         if (fields.length == 0) {
-            throw new FatalError("can't bind empty expression: " + expr.toString(), expr.pos);
+            throw new FatalError('Can\'t bind empty expression: ${expr.toString()}', expr.pos);
             return null;
         }
 
@@ -162,11 +165,11 @@ class BindExt {
         }
         var bindableNum = fields.fold(function (it, n) return n += it.bindable ? 1 : 0, 0);
         if (bindableNum == 0) {
-            throw new bindx.Error('expr is not bindable "${expr.toString()}".', expr.pos);
+            throw new bindx.Error('${expr.toString()} is not bindable.', expr.pos);
             return null;
         }
         if (first != null)
-            Context.warning('expr is not full bindable. Can bind only "${first.e.toString()}"', expr.pos);
+            Context.warning('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos);
         
         return prepareChain(fields, macro listener, expr.pos, prefix);
     }
@@ -234,7 +237,7 @@ class BindExt {
         }
         
         if (zeroListener == null || zeroListener.f.bindable == false)
-            Context.error("Chain is not bindable", pos);
+            throw new bindx.Error("Chain is not bindable.", pos);
         
         res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
