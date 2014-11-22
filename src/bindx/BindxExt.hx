@@ -120,7 +120,8 @@ class BindExt {
     
     static function checkFields(expr:Expr):Array<FieldExpr> {
         var first = Bind.checkField(expr);
-        if (first.field == null || first.error != null) return [];
+        if (first.field == null || first.error != null)
+            throw new FatalError('${expr.toString()} is not bindable', expr.pos);
         
         var prevField = {e:first.e, field:first.field, error:null};
         var fields:Array<FieldExpr> = [ { field:first.field, bindable:true, e:first.e } ];
@@ -189,7 +190,6 @@ class BindExt {
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
-            trace(prev.field);
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
