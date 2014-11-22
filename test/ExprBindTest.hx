@@ -51,7 +51,7 @@ class ExprBindTest extends BuddySuite {
                 c.str = "1";
                 inline function val() return if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0;
                 
-                BindExt.expr(if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0, function (from, to:Int) {
+                BindExt.expr(if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0, function (from, to:Null<Int>) {
                     to.should.be(val());
                     callNum ++;
                 });
