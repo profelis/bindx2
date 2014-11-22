@@ -24,9 +24,9 @@ class ExprBindTest extends BuddySuite {
                 var b = new BaseTest.Bindable1();
                 a.str = "a1";
                 b.str = "b1";
-                inline function val() return a.str + b.str + a.str.charAt(0) + "ab".charAt(0) + Std.string(1);
+                inline function val() return b.str + "ab".charAt(a.str.length - 2) + Std.string(1);
                 
-                BindExt.expr(a.str + b.str + a.str.charAt(0) + "ab".charAt(0) + Std.string(1), function (from, to:String) {
+                BindExt.expr(b.str + "ab".charAt(a.str.length - 2) + Std.string(1), function (from, to:String) {
                     to.should.be(val());
                     callNum ++;
                 });
@@ -40,6 +40,39 @@ class ExprBindTest extends BuddySuite {
                 b.str = "b2";
                 
                 callNum.should.be(3);
+            });
+            
+            it("BindExt.chain should bind complex expresions", {
+                var a = new BaseTest.Bindable1();
+                var b = new BaseTest.Bindable1();
+                var c = new BaseTest.Bindable1();
+                a.str = "a1";
+                b.str = "";
+                c.str = "1";
+                inline function val() return if (a.str.charAt(b.str.length) == c.str) a.str else c.str;
+                
+                BindExt.expr(if (a.str.charAt(b.str.length) == c.str) a.str else c.str, function (from, to:String) {
+                    to.should.be(val());
+                    callNum ++;
+                });
+                
+                callNum.should.be(1);
+                
+                b.str = "1";
+                
+                callNum.should.be(2);
+                
+                b.str = "";
+                
+                callNum.should.be(3);
+                
+                a.str = "b2";
+                
+                callNum.should.be(4);
+                
+                c.str = "b";
+                
+                callNum.should.be(5);
             });
             
         });

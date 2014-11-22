@@ -22,6 +22,7 @@ typedef Chain = {
     var init:Array<Expr>;
     var bind:Array<Expr>;
     var unbind:Array<Expr>;
+    var expr:Expr;
 }
 
 #end
@@ -57,10 +58,12 @@ class BindExt {
         var fieldListenerNameExpr = macro $i{fieldListenerName};
         var methodListenerName = "methodListener";
         var methodListenerNameExpr = macro $i{methodListenerName};
-        var chain:Chain = { init:[], bind:[], unbind:[] };
+        var chain:Chain = { init:[], bind:[], unbind:[], expr:expr };
+        var binded:Map<String, Bool> = new Map();
         
         var prefix = 0;
         function findChain(expr:Expr) {
+            //trace(new Printer().printExpr(expr));
             var ch = [];
             var isChain;
             var e = expr;
@@ -84,14 +87,20 @@ class BindExt {
             if (e != start) {
                 var pre = '_${prefix++}';
                 var zeroListener = listenerName(0, pre);
-
                 var c = null;
-                try { c = warnPrepareChain(start, macro $i{zeroListener}, pre); } catch (e:bindx.Error) { e.contextWarning(); }
+                try { c = warnPrepareChain(start, macro $i{zeroListener}, pre, true); } catch (e:bindx.Error) { e.contextWarning(); }
                 if (c != null) {
-                    chain.init.push(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
-                    chain.init = chain.init.concat(c.init);
-                    chain.bind = chain.bind.concat(c.bind);
-                    chain.unbind = chain.unbind.concat(c.unbind);
+                    var key = c.expr.toString();
+                    if (!binded.exists(key)) {
+                        binded.set(key, true);
+                        Context.warning('Bind ${start.toString()}', start.pos);
+                        chain.bind.unshift(macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr});
+                        chain.init = chain.init.concat(c.init);
+                        chain.bind = chain.bind.concat(c.bind);
+                        chain.unbind = chain.unbind.concat(c.unbind);
+                    } else {
+                        Context.warning("skip second bind " + c.expr.toString(), start.pos);
+                    }
                 }
             }
             e.iter(findChain);
@@ -120,11 +129,13 @@ class BindExt {
     
     static function checkFields(expr:Expr):Array<FieldExpr> {
         var first = Bind.checkField(expr);
-        if (first.field == null || first.error != null)
-            throw new FatalError('${expr.toString()} is not bindable', expr.pos);
+        if (first.field == null) {
+            if (first.error != null) throw first.error;
+            else throw new FatalError('${expr.toString()} is not bindable.', expr.pos);
+        }
         
         var prevField = {e:first.e, field:first.field, error:null};
-        var fields:Array<FieldExpr> = [ { field:first.field, bindable:true, e:first.e } ];
+        var fields:Array<FieldExpr> = [ { field:first.field, bindable:first.error == null, e:first.e } ];
         
         while (true) {
             var field = Bind.checkField(prevField.e);
@@ -143,15 +154,16 @@ class BindExt {
                 if (end) break;
             }
             else if (field.e == null) {
-                throw new FatalError('${prevField.e.toString()} is not bindable.', expr.pos);
+                throw new FatalError('${prevField.e.toString()} is not bindable.', prevField.e.pos);
             }
             prevField = field;
         }
         
+        //trace(expr.toString() + " " + [for (f in fields) f.bindable]);
         return fields;
     }
     
-    static function warnPrepareChain(expr:Expr, listener:Expr, prefix = ""):Chain {
+    static function warnPrepareChain(expr:Expr, listener:Expr, prefix = "", skipUnbindable = false):Chain {
         var fields = checkFields(expr);
 
         if (fields.length == 0) {
@@ -164,7 +176,13 @@ class BindExt {
         while (i-- > 0) {
             var f = fields[i];
             if (first != null) f.bindable = false;
-            else if (!f.bindable && first == null) first = f;
+            else if (!f.bindable && first == null) {
+                first = f;
+                if (skipUnbindable) {
+                    fields = fields.splice(i+1, fields.length - i);
+                    break;
+                }
+            }
         }
         var bindableNum = fields.fold(function (it, n) return n += it.bindable ? 1 : 0, 0);
         if (bindableNum == 0) {
@@ -181,11 +199,15 @@ class BindExt {
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
     static function prepareChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
-        var res:Chain = { init:[], bind:[], unbind:[] };
+        var res:Chain = { init:[], bind:[], unbind:[], expr:null };
         
         var prevListenerName = listenerName(0, prefix);
         var prevListenerNameExpr = macro $i { prevListenerName };
         var zeroListener = fields[0].bindable ? { f:fields[0], l:prevListenerNameExpr } : null;
+        if (zeroListener != null) {
+            var fn = zeroListener.f.field.name;
+            res.expr = macro ${zeroListener.f.e}.$fn;
+        }
         var i = -1;
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
@@ -201,7 +223,14 @@ class BindExt {
             
             var fieldListenerBody = [];
             var fieldListener;
-            if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
+            if (field.bindable) {
+                zeroListener = { f:field, l:listenerNameExpr };
+                
+            }
+            if (prev.bindable && res.expr == null) {
+                    var fn = prev.field.name;
+                    res.expr = macro ${prev.e}.$fn;
+            }
             
             var type = Context.typeof(field.e).toComplexType();
             
@@ -243,6 +272,7 @@ class BindExt {
         if (zeroListener == null || zeroListener.f.bindable == false)
             throw new bindx.Error("Chain is not bindable.", pos);
         
+        //trace(zeroListener.f);
         res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
 
