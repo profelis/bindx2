@@ -100,7 +100,7 @@ class BindExt {
                 try { 
                     c = warnPrepareChain(start, macro $i { zeroListener }, pre, true); 
                 } catch (e:bindx.Error) {
-                    Context.warning('${start.toString()} is not bindable.', e.pos);
+                    //Context.warning('${start.toString()} is not bindable.', e.pos);
                     //e.contextWarning();
                 }
                 if (c != null) {
@@ -123,24 +123,23 @@ class BindExt {
         var i = 0;
         while (i < keys.length) {
             var k = keys[i];
-            var j = i;
             var remove = false;
-            while (++j < keys.length) if (keys[j].startsWith(k)) {
-                remove = true;
-                break;
-            }
+            var j = i;
+            while (!remove && ++j < keys.length) remove = keys[j].startsWith(k);
             if (remove) keys = keys.splice(i, 1); else i++;
         }
         
+        var msg = [];
         for (k in keys) {
             var data = binded.get(k);
-            Context.warning('Bind ${data.c.expr.toString()}', data.c.expr.pos);
+            msg.push(data.c.expr.toString());
             chain.bind.unshift(data.prebind);
             var c = data.c;
             chain.init = chain.init.concat(c.init);
             chain.bind = chain.bind.concat(c.bind);
             chain.unbind = chain.unbind.concat(c.unbind);
         }
+        Context.warning('Bind \'${msg.join("', '")}\'', expr.pos);
         
         var zeroListener = listenerName(0, "");
         
@@ -172,12 +171,14 @@ class BindExt {
         var prevField = {e:first.e, field:first.field, error:null};
         var fields:Array<FieldExpr> = [ { field:first.field, bindable:first.error == null, e:first.e } ];
         
-        while (true) {
+        var end = false;
+        while (!end) {
+            end = true;
             var field = Bind.checkField(prevField.e);
             if (field.field != null) {
                 fields.push( { field:field.field, bindable:field.error == null, e:field.e } );
+                end = false;
             } else if (field.error != null) {
-                var end = true;
                 switch (prevField.e.expr) {
                     case ECall(e, params):
                         field = Bind.checkField(e);
@@ -186,7 +187,6 @@ class BindExt {
                         end = false;
                     case _:
                 }
-                if (end) break;
             }
             else if (field.e == null) {
                 throw new FatalError('${prevField.e.toString()} is not bindable.', prevField.e.pos);
