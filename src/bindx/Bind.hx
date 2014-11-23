@@ -84,11 +84,7 @@ class Bind {
 		switch (f.expr) {
 			case EField(e, field):
 				var type = Context.typeof(e);
-				var classType = null;
-				switch (type) {
-					case TInst(c, _): classType = c.get();
-					case _:
-				}
+				var classType = switch (type) { case TInst(c, _): c.get(); case _: null; };
 				if (classType == null) {
 					error = new FatalError('Type \'${e.toString()}\' is unknown', e.pos);
 					return {e:f, field:null, error:error};

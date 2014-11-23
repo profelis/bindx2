@@ -64,30 +64,20 @@ class BindExt {
         
         var prefix = 0;
         function findChain(expr:Expr) {
-            //trace(new Printer().printExpr(expr));
-            var ch = [];
             var isChain;
             var e = expr;
-            var start = expr;
             var ecall = false;
-            do {
-                isChain = false;
-                switch (e.expr) {
-                    case EField(le, _): 
-                        isChain = true;
-                        e = le;
-                    case ECall(le, params):
-                        for (p in params) findChain(p);
-                        isChain = true;
-                        ecall = true;
-                        e = le;
-                    case _:
-                }
-                
+            do switch (e.expr) {
+                case EField(le, _) | ECall(le, _): 
+                    isChain = true;
+                    ecall = e.expr.match(ECall(_, _));
+                    e = le;
+                case _:
+                    isChain = false;
             } while (isChain);
-            var doBind = e != start;
+            var doBind = e != expr;
             if (doBind) {
-                var key = start.toString();
+                var key = expr.toString();
                 for (k in binded.keys()) if (k.startsWith(key)) {
                     doBind = false;
                     break;
@@ -98,10 +88,9 @@ class BindExt {
                 var zeroListener = listenerName(0, pre);
                 var c = null;
                 try { 
-                    c = warnPrepareChain(start, macro $i { zeroListener }, pre, true); 
+                    c = warnPrepareChain(expr, macro $i { zeroListener }, pre, true); 
                 } catch (e:bindx.Error) {
                     //Context.warning('${start.toString()} is not bindable.', e.pos);
-                    //e.contextWarning();
                 }
                 if (c != null) {
                     var key = c.expr.toString();
@@ -109,10 +98,9 @@ class BindExt {
                         var prebind = macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr};
                         binded.set(key, {prebind:prebind, c:c});
                     }
-                    else {
-                        //trace("skip second bind " + key);
+                    //else {
                         //Context.warning("skip second bind " + key, c.expr.pos);
-                    }
+                    //}
                 }
             }
             expr.iter(findChain);
@@ -147,11 +135,12 @@ class BindExt {
             case macro : Void: macro if (!init) $i{zeroListener}();
             case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}(null, v); }; 
         }
-        
-        var fieldListener = macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener;
-        var methodListener = macro function $methodListenerName() $callListener;
-        
-        var base = [(macro var init:Bool = true), fieldListener, methodListener];
+
+        var base = [
+            (macro var init:Bool = true),
+            macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener,
+            macro function $methodListenerName() $callListener
+        ];
         
         var res = macro (function ($zeroListener):Void->Void
             $b { base.concat(chain.bind).concat(chain.init).concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
@@ -193,7 +182,6 @@ class BindExt {
             }
             prevField = field;
         }
-        
         //trace(expr.toString() + " " + [for (f in fields) f.bindable]);
         return fields;
     }
@@ -201,10 +189,8 @@ class BindExt {
     static function warnPrepareChain(expr:Expr, listener:Expr, prefix = "", skipUnbindable = false):Chain {
         var fields = checkFields(expr);
 
-        if (fields.length == 0) {
+        if (fields.length == 0)
             throw new FatalError('Can\'t bind empty expression: ${expr.toString()}', expr.pos);
-            return null;
-        }
 
         var i = fields.length;
         var first = null;
@@ -227,7 +213,6 @@ class BindExt {
         if (first != null)
             Context.warning('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos);
         
-        //trace(fields);
         return prepareChain(fields, macro listener, expr.pos, prefix);
     }
     
@@ -247,6 +232,7 @@ class BindExt {
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
+            var type = Context.typeof(field.e).toComplexType();
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
@@ -258,16 +244,13 @@ class BindExt {
             
             var fieldListenerBody = [];
             var fieldListener;
-            if (field.bindable) {
-                zeroListener = { f:field, l:listenerNameExpr };
-                
-            }
+            
+            if (field.bindable) zeroListener = { f:field, l:listenerNameExpr };
+            
             if (prev.bindable && res.expr == null) {
                 var fn = prev.field.name;
                 res.expr = macro @:pos(prev.e.pos) ${prev.e}.$fn;
             }
-            
-            var type = Context.typeof(field.e).toComplexType();
             
             if (prev.bindable) {
                 var unbind = BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
@@ -287,8 +270,7 @@ class BindExt {
                 fieldListenerBody.unshift(macro var n:Null<$type> = try $e catch (e:Dynamic) null );
                 
                 fieldListener = macro function $listenerName ():Void $b { fieldListenerBody };
-            }
-            else {
+            } else {
                 if (prev.bindable) {
                     fieldListenerBody.unshift(macro if (o != null) 
                         ${BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
@@ -307,31 +289,16 @@ class BindExt {
         if (zeroListener == null || zeroListener.f.bindable == false)
             throw new bindx.Error("Chain is not bindable.", pos);
         
-        //trace(zeroListener.f);
         res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
 
         if (zeroListener.f.params != null) {
             res.init.push(macro ${zeroListener.l}());
-        }
-        else {
+        } else {
             var fieldName = zeroListener.f.field.name;
             res.init.push(macro $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ));
         }
         return res;
     }
-    
-    static function traceChain(c:Chain) {
-        var p = new Printer();
-        function iter(exprs:Array<Expr>, name) {
-            trace('::$name::');
-            for (e in exprs) trace(p.printExpr(e));
-        }
-        
-        iter(c.init, "init");
-        iter(c.bind, "bind");
-        iter(c.unbind, "unbind");
-    }
     #end
-    
 }
