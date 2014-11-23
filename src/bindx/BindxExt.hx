@@ -85,14 +85,21 @@ class BindExt {
                 }
                 
             } while (isChain);
-            if (e != start) {
+            var doBind = e != start;
+            if (doBind) {
+                var key = start.toString();
+                for (k in binded.keys()) if (k.startsWith(key)) {
+                    doBind = false;
+                    break;
+                }
+            }
+            if (doBind) {
                 var pre = '_${prefix++}';
                 var zeroListener = listenerName(0, pre);
                 var c = null;
                 try { 
                     c = warnPrepareChain(start, macro $i { zeroListener }, pre, true); 
-                }
-                catch (e:bindx.Error) {
+                } catch (e:bindx.Error) {
                     Context.warning('${start.toString()} is not bindable.', e.pos);
                     //e.contextWarning();
                 }
@@ -118,17 +125,11 @@ class BindExt {
             var k = keys[i];
             var j = i;
             var remove = false;
-            while (++j < keys.length) {
-                if (keys[j].startsWith(k)) {
-                    remove = true;
-                    break;
-                }
+            while (++j < keys.length) if (keys[j].startsWith(k)) {
+                remove = true;
+                break;
             }
-            if (remove) {
-                keys = keys.splice(i, 1);
-                //Context.warning("skip second bind " + k, binded.get(k).e.pos);
-            }
-            else i++;
+            if (remove) keys = keys.splice(i, 1); else i++;
         }
         
         for (k in keys) {
