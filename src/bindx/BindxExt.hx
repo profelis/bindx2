@@ -24,6 +24,7 @@ typedef Chain = {
     var bind:Array<Expr>;
     var unbind:Array<Expr>;
     var expr:Expr;
+    var zeroName:String;
 }
 
 #end
@@ -46,9 +47,9 @@ class BindExt {
         try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:bindx.Error) e.contextError();
         
         var res = macro (function ($zeroListener):Void->Void
-            $b { chain.bind.concat(chain.init).concat([macro return function ():Void $b { chain.unbind }]) }
+            $b { chain.init.concat(chain.bind).concat([macro return function ():Void $b { chain.unbind }]) }
         )($listener);
-        //trace(new Printer().printExpr(res));
+        trace(new Printer().printExpr(res));
         return res;
     }
     
@@ -59,7 +60,7 @@ class BindExt {
         var fieldListenerNameExpr = macro $i{fieldListenerName};
         var methodListenerName = "methodListener";
         var methodListenerNameExpr = macro $i{methodListenerName};
-        var chain:Chain = { init:[], bind:[], unbind:[], expr:expr };
+        var chain:Chain = { init:[], bind:[], unbind:[], expr:expr, zeroName:null };
         var binded:Map<String, {prebind:Expr, c:Chain}> = new Map();
         
         var prefix = 0;
@@ -138,12 +139,15 @@ class BindExt {
 
         var base = [
             (macro var init:Bool = true),
+        ];
+        
+        var init = [
             macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener,
             macro function $methodListenerName() $callListener
         ];
         
         var res = macro (function ($zeroListener):Void->Void
-            $b { base.concat(chain.bind).concat(chain.init).concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
+            $b { base.concat(chain.init).concat(init).concat(chain.bind).concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
         )($listener);
         
         trace(new Printer().printExpr(res));
@@ -219,7 +223,7 @@ class BindExt {
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
     static function prepareChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
-        var res:Chain = { init:[], bind:[], unbind:[], expr:null };
+        var res:Chain = { init:[], bind:[], unbind:[], expr:null, zeroName:null };
         
         var prevListenerName = listenerName(0, prefix);
         var prevListenerNameExpr = macro $i { prevListenerName };
@@ -236,7 +240,7 @@ class BindExt {
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
-            var value = '${prefix}value${i}';
+            var value = '${prefix}value${i+1}';
             var valueExpr = macro $i { value };
             
             var fieldName = prev.field.name;
@@ -288,15 +292,19 @@ class BindExt {
         
         if (zeroListener == null || zeroListener.f.bindable == false)
             throw new bindx.Error("Chain is not bindable.", pos);
+            
+        var zeroName = res.zeroName = zeroListener.f.e.toString();
+        res.init.unshift(macro var $zeroName = $i{zeroName});
         
-        res.init.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
-        res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(zeroListener.f.e, zeroListener.f.field, zeroListener.l ));
+        // TODO: local var
+        res.bind.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
+        res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
 
         if (zeroListener.f.params != null) {
-            res.init.push(macro ${zeroListener.l}());
+            res.bind.push(macro ${zeroListener.l}());
         } else {
             var fieldName = zeroListener.f.field.name;
-            res.init.push(macro $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ));
+            res.bind.push(macro $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ));
         }
         return res;
     }
