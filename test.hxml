@@ -2,7 +2,7 @@
 -cp src
 -cp test
 -D dump=pretty
--neko bin/test.n
+--interp
 -lib buddy
 -D reporter=buddy.reporting.TravisHxReporter
 -D console_log

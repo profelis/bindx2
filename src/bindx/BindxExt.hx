@@ -137,17 +137,15 @@ class BindExt {
             case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}(null, v); }; 
         }
 
-        var base = [
-            (macro var init:Bool = true),
-        ];
-        
         var init = [
             macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener,
             macro function $methodListenerName() $callListener
         ];
         
+        init = [macro var init:Bool = true].concat(chain.init).concat(init).concat(chain.bind);
+        
         var res = macro (function ($zeroListener):Void->Void
-            $b { base.concat(chain.init).concat(init).concat(chain.bind).concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
+            $b { init.concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
         )($listener);
         
         trace(new Printer().printExpr(res));
@@ -294,7 +292,8 @@ class BindExt {
             throw new bindx.Error("Chain is not bindable.", pos);
             
         var zeroName = res.zeroName = zeroListener.f.e.toString();
-        res.init.unshift(macro var $zeroName = $i{zeroName});
+        if (zeroName != "this")
+            res.init.unshift(macro var $zeroName = $i{zeroName});
         
         // TODO: local var
         res.bind.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
