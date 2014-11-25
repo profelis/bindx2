@@ -215,12 +215,12 @@ class BindExt {
         if (first != null)
             Context.warning('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos);
         
-        return prepareChain(fields, macro listener, expr.pos, prefix);
+        return prepareChain(fields, macro listener, expr, prefix);
     }
     
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
-    static function prepareChain(fields:Array<FieldExpr>, listener:Expr, pos:Position, prefix = ""):Chain {
+    static function prepareChain(fields:Array<FieldExpr>, expr:Expr, listener:Expr, prefix = ""):Chain {
         var res:Chain = { init:[], bind:[], unbind:[], expr:null, zeroName:null };
         
         var prevListenerName = listenerName(0, prefix);
@@ -265,11 +265,12 @@ class BindExt {
                 fieldListenerBody.push(macro if (n != null)
                     $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
-            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro null, macro n != null ? n.$fieldName : null] } );
+            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null] } );
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
                 fieldListenerBody.unshift(macro var n:Null<$type> = try $e catch (e:Dynamic) null );
+                fieldListenerBody.unshift(macro var o:Null<$type> = null );
                 
                 fieldListener = macro function $listenerName ():Void $b { fieldListenerBody };
             } else {
@@ -289,13 +290,12 @@ class BindExt {
         }
         
         if (zeroListener == null || zeroListener.f.bindable == false)
-            throw new bindx.Error("Chain is not bindable.", pos);
+            throw new bindx.Error("Chain is not bindable.", expr.pos);
             
         var zeroName = res.zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")
             res.init.unshift(macro var $zeroName = $i{zeroName});
         
-        // TODO: local var
         res.bind.push(BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
 
