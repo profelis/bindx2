@@ -14,11 +14,13 @@ class ChainBindTest extends BuddySuite {
         
         describe("Using BindExt.chain", {
             
+            var from:String;
             var val:String;
             var b:BindableChain;
             var callNum:Int;
             
             before({
+                from = null;
                 val = "a";
                 b = new BindableChain(4);
                 callNum = 0;
@@ -27,8 +29,10 @@ class ChainBindTest extends BuddySuite {
             it("BindExt.chain should bind chain changes (unset links)", {
                 b.c.c.d = val;
                 
-                var listener = function (_, t:String) {
+                var listener = function (f:String, t:String) {
                     callNum++;
+                    f.should.be(from);
+                    from = val;
                     t.should.be(val);
                 };
                 var unbind = BindExt.chain(b.c.c.d, listener);
@@ -37,6 +41,7 @@ class ChainBindTest extends BuddySuite {
                 
                 val = null;
                 b.c = null;
+                
                 callNum.should.be(2);
                 
                 b.c = new BindableChain(2);
@@ -54,8 +59,10 @@ class ChainBindTest extends BuddySuite {
                 b.c = null;
                 val = null;
                 
-                var unbind = BindExt.chain(b.c.c.d, function (_, t:String) {
+                var unbind = BindExt.chain(b.c.c.d, function (f:String, t:String) {
                     callNum++;
+                    f.should.be(from);
+                    from = val;
                     t.should.be(val);
                 });
                 
@@ -72,9 +79,11 @@ class ChainBindTest extends BuddySuite {
                 var b2 = new BindableChain(4);
                 b.c.c.f("tada").d = val;
                 b2.c.c.f("tada").d = val;
-                var unbind = BindExt.chain(b.c.c.f("tada").d, function (_, t:String) {
-                    callNum++;
+                var unbind = BindExt.chain(b.c.c.f("tada").d, function (f:String, t:String) {
+                    f.should.be(from);
+                    from = val;
                     t.should.be(val);
+                    callNum++;
                 });
                 
                 callNum.should.be(1); // first auto call
