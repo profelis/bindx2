@@ -35,8 +35,18 @@ class BindExt {
         return internalBindExpr(expr, listener);
     }
     
+    @:noUsing macro static public function exprTo(expr:Expr, target:Expr):Expr {
+        var type = Context.typeof(expr).toComplexType();
+        return internalBindExpr(expr, macro function (_, to:Null<$type>) $target = to);
+    }
+    
     @:noUsing macro static public function chain(expr:Expr, listener:Expr):Expr {
         return internalBindChain(expr, listener);
+    }
+    
+    @:noUsing macro static public function chainTo(expr:Expr, target:Expr):Expr {
+        var type = Context.typeof(expr).toComplexType();
+        return internalBindChain(expr, macro function (_, to:Null<$type>) $target = to);
     }
     
     #if macro
