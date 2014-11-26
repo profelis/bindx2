@@ -108,14 +108,17 @@ class ChainBindTest extends BuddySuite {
             
             it("BindExt.chain should bind chain changes (1 gap)", {
                 b.c.nc.c.f("tada").d = "a";
-                var unbind = BindExt.chain(b.c.nc.c.f("tada").d, function (_, t:String) {
-                    callNum++;
+                var unbind = BindExt.chain(b.c.nc.c.f("tada").d, function (f:String, t:String) {
+                    f.should.be(from);
+                    from = val;
                     t.should.be(val);
+                    callNum++;
                 });
                 
                 callNum.should.be(1);
                 
                 b.c.nc.c.f("tada").d = val = "b"; // nc gap
+                from = val;
                 callNum.should.be(1);
                 
                 var b2 = new BindableChain(4);
@@ -143,9 +146,11 @@ class ChainBindTest extends BuddySuite {
             it("BindExt.chain should bind chain changes (double gap)", {
                 b.c.nc.nc.d = "a";
                 
-                BindExt.chain(b.c.nc.nc.d, function (_, t:String) {
-                    callNum++;
+                BindExt.chain(b.c.nc.nc.d, function (f, t:String) {
+                    f.should.be(from);
+                    from = val;
                     t.should.be(val);
+                    callNum++;
                 });
                 
                 callNum.should.be(1);
@@ -163,7 +168,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(1);
                 
                 b.c.nc.nc.d = val = "d";
-                
+                from = val;
                 callNum.should.be(1);
                 
                 b2 = new BindableChain(3);
@@ -178,13 +183,16 @@ class ChainBindTest extends BuddySuite {
             });
             
             it("BindExt.chain should bind default fields", {
-                b.d = "a";
+                b.d = val = "a";
                 
                 var unbind = BindExt.chain(b.d, function (f:String, t:String) {
+                    f.should.be(from);
+                    from = val;
+                    t.should.be(val);
                     callNum ++;
                 });
                 
-                b.d = "b";
+                b.d = val = "b";
                 callNum.should.be(2);
                 
                 unbind();
