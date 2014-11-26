@@ -17,11 +17,13 @@ class ChainBindTest extends BuddySuite {
             var val:String;
             var b:BindableChain;
             var callNum:Int;
+            var target:{a:String};
             
             before({
                 from = null;
                 val = "a";
                 b = new BindableChain(4);
+                target = { a: null };
                 callNum = 0;
             });
             
@@ -35,15 +37,18 @@ class ChainBindTest extends BuddySuite {
                     t.should.be(val);
                 };
                 var unbind = BindExt.chain(b.c.c.d, listener);
+                BindExt.chainTo(b.c.c.d, target.a);
                 
                 callNum.should.be(1);
                 
                 val = null;
                 b.c = null;
                 
+                target.a.should.be(val);
                 callNum.should.be(2);
                 
                 b.c = new BindableChain(2);
+                target.a.should.be(val);
                 callNum.should.be(3); // d null value change to null value
                 
                 b.c.c.d = val = "b";
@@ -51,6 +56,8 @@ class ChainBindTest extends BuddySuite {
                 
                 val = null;
                 b.c.c = null;
+                
+                target.a.should.be(val);
                 callNum.should.be(5);
             });
             
@@ -64,13 +71,16 @@ class ChainBindTest extends BuddySuite {
                     from = val;
                     t.should.be(val);
                 });
-                
+                BindExt.chainTo(b.c.c.d, target.a);
+                target.a.should.be(val);
                 callNum.should.be(1);
                 
                 b.c = new BindableChain(2);
+                target.a.should.be(val);
                 callNum.should.be(2);
                 
                 b.c.c.d = val = "b";
+                target.a.should.be(val);
                 callNum.should.be(3);
             });
             
@@ -84,24 +94,29 @@ class ChainBindTest extends BuddySuite {
                     t.should.be(val);
                     callNum++;
                 });
-                
+                var unbind2 = BindExt.chainTo(b.c.c.f("tada").d, target.a);
                 callNum.should.be(1); // first auto call
                 
                 b.c.c.f("tada").d = val = "b";
+                target.a.should.be(val);
                 callNum.should.be(2); // bind
                 
                 val = b2.c.c.f("tada").d;
                 b.c = b2.c;
+                target.a.should.be(val);
                 callNum.should.be(3);
                 
                 b.c.c = b2.c.c;
                 callNum.should.be(3);
                 
                 Bind.notify(b.c.c.f);
+                target.a.should.be(val);
                 callNum.should.be(4);
                 
                 unbind();
+                unbind2();
                 b.c.c.f("tada").d = "c";
+                target.a.should.be(val);
                 callNum.should.be(4);
             });
             
@@ -113,11 +128,14 @@ class ChainBindTest extends BuddySuite {
                     t.should.be(val);
                     callNum++;
                 });
+                var unbind2 = BindExt.chainTo(b.c.nc.c.f("tada").d, target.a);
                 
+                target.a.should.be(val);
                 callNum.should.be(1);
                 
                 b.c.nc.c.f("tada").d = val = "b"; // nc gap
                 from = val;
+                target.a.should.not.be(val);
                 callNum.should.be(1);
                 
                 var b2 = new BindableChain(4);
@@ -125,20 +143,25 @@ class ChainBindTest extends BuddySuite {
                 var t = b.c;
                 b.c = b2.c; // bind works
                 
+                target.a.should.be(val);
                 callNum.should.be(2);
                 
                 val = t.nc.c.f("tada").d;
                 b.c = t; // bind works
                 
+                target.a.should.be(val);
                 callNum.should.be(3);
                 
                 b2.c.nc.c.f("tada").d = val = "d";
                 
                 b.c.nc.c = b2.c.nc.c; // nc gap
+                target.a.should.not.be(val);
                 callNum.should.be(3);
                 
                 unbind();
+                unbind2();
                 b.c.nc.c.f("tada").d = "c"; // nc gap
+                target.a.should.not.be(val);
                 callNum.should.be(3);
             });
             
@@ -190,13 +213,18 @@ class ChainBindTest extends BuddySuite {
                     t.should.be(val);
                     callNum ++;
                 });
+                var unbind2 = BindExt.chainTo(b.d, target.a);
                 
                 b.d = val = "b";
+                
+                target.a.should.be(val);
                 callNum.should.be(2);
                 
                 unbind();
+                unbind2();
                 
                 b.d = "c";
+                target.a.should.be(val);
                 callNum.should.be(2);
             });
             
