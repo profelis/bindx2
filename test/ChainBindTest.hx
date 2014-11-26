@@ -7,7 +7,6 @@ import buddy.BuddySuite;
 
 using buddy.Should;
 
-//@exclude
 class ChainBindTest extends BuddySuite {
     
     public function new() {

@@ -7,7 +7,6 @@ import buddy.BuddySuite;
 
 using buddy.Should;
 
-//@exclude
 class ExprBindTest extends BuddySuite {
     
     public function new() {
@@ -15,7 +14,9 @@ class ExprBindTest extends BuddySuite {
         describe("Using BindExt.expr", {
             
             var callNum:Int;
+            var from:String;
             before({
+                from = null;
                 callNum = 0;
             });
             
@@ -26,7 +27,9 @@ class ExprBindTest extends BuddySuite {
                 b.str = "b1";
                 inline function val() return b.str + "ab".charAt(a.str.length - 2) + Std.string(1);
                 
-                BindExt.expr(b.str + "ab".charAt(a.str.length - 2) + Std.string(1), function (from, to:String) {
+                BindExt.expr(b.str + "ab".charAt(a.str.length - 2) + Std.string(1), function (f, to:String) {
+                    f.should.be(from);
+                    from = to;
                     to.should.be(val());
                     callNum ++;
                 });
@@ -50,8 +53,11 @@ class ExprBindTest extends BuddySuite {
                 b.str = "";
                 c.str = "1";
                 inline function val() return if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0;
+                var from:Null<Int> = null;
                 
-                BindExt.expr(if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0, function (from, to:Null<Int>) {
+                BindExt.expr(if (a.str.charAt(b.str.length) == Std.string(c.str)) 1 else 0, function (f, to:Null<Int>) {
+                    f.should.be(from);
+                    from = to;
                     to.should.be(val());
                     callNum ++;
                 });
