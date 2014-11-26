@@ -131,18 +131,21 @@ class BindExt {
         Context.warning('Bind \'${msg.join("', '")}\'', expr.pos);
         
         var zeroListener = listenerName(0, "");
+        var zeroValue = 'value0';
         
         var callListener = switch (type) {
             case macro : Void: macro if (!init) $i{zeroListener}();
-            case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}(null, v); }; 
+            case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}($i{zeroValue}, $i{zeroValue} = v); }; 
         }
+        
+        chain.unbind.unshift(macro $i{zeroValue} = null);
 
         var init = [
             macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener,
             macro function $methodListenerName() $callListener
         ];
         
-        init = [macro var init:Bool = true].concat(chain.init).concat(init).concat(chain.bind);
+        init = [(macro var init:Bool = true), macro var $zeroValue:Null<$type> = null].concat(chain.init).concat(init).concat(chain.bind);
         
         var res = macro (function ($zeroListener):Void->Void
             $b { init.concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
