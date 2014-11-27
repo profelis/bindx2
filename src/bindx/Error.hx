@@ -3,6 +3,24 @@ package bindx;
 import haxe.macro.Context;
 import haxe.macro.Expr.Position;
 
+@:enum abstract WarnPriority(Int) to Int from Int {
+    var ALL = 2;
+    var INFO = 1;
+    var LOW = 0;
+}
+
+class Warn {
+    static var level:WarnPriority = null;
+    
+    public static function w(msg:String, pos:Position, level:WarnPriority) {
+        if (Warn.level == null) {
+            Warn.level = Context.defined("bindx_log") ? Std.parseInt(Context.definedValue("bindx_log")) : LOW;
+        }
+        if ((Warn.level : Int) >= (level : Int))
+            Context.warning(msg, pos);
+    }
+}
+
 class FatalError extends Error {}
 
 class Error {

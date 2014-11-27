@@ -56,11 +56,9 @@ class BindExt {
         var chain = null;
         try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:bindx.Error) e.contextError();
         
-        var res = macro (function ($zeroListener):Void->Void
+        return macro (function ($zeroListener):Void->Void
             $b { chain.init.concat(chain.bind).concat([macro return function ():Void $b { chain.unbind }]) }
         )($listener);
-        trace(new Printer().printExpr(res));
-        return res;
     }
     
     public static function internalBindExpr(expr:Expr, listener:Expr):Expr {
@@ -101,7 +99,7 @@ class BindExt {
                 try { 
                     c = warnPrepareChain(expr, macro $i { zeroListener }, pre, true); 
                 } catch (e:bindx.Error) {
-                    //Context.warning('${start.toString()} is not bindable.', e.pos);
+                    Warn.w('${expr.toString()} is not bindable.', e.pos, WarnPriority.ALL);
                 }
                 if (c != null) {
                     var key = c.expr.toString();
@@ -109,9 +107,6 @@ class BindExt {
                         var prebind = macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr};
                         binded.set(key, {prebind:prebind, c:c});
                     }
-                    //else {
-                        //Context.warning("skip second bind " + key, c.expr.pos);
-                    //}
                 }
             }
             expr.iter(findChain);
@@ -138,7 +133,7 @@ class BindExt {
             chain.bind = chain.bind.concat(c.bind);
             chain.unbind = chain.unbind.concat(c.unbind);
         }
-        Context.warning('Bind \'${msg.join("', '")}\'', expr.pos);
+        Warn.w('Bind \'${msg.join("', '")}\'', expr.pos, WarnPriority.INFO);
         
         var zeroListener = listenerName(0, "");
         var zeroValue = 'value0';
@@ -150,19 +145,21 @@ class BindExt {
         
         chain.unbind.unshift(macro $i{zeroValue} = null);
 
-        var init = [
+        var preInit = [
+            (macro var init:Bool = true),
+            macro var $zeroValue:Null<$type> = null
+        ];
+        
+        var postInit = [
             macro function $fieldListenerName(?from:Dynamic, ?to:Dynamic) $callListener,
             macro function $methodListenerName() $callListener
         ];
         
-        init = [(macro var init:Bool = true), macro var $zeroValue:Null<$type> = null].concat(chain.init).concat(init).concat(chain.bind);
+        var result = [macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }];
         
-        var res = macro (function ($zeroListener):Void->Void
-            $b { init.concat([macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }]) }
+        return macro (function ($zeroListener):Void->Void
+            $b { preInit.concat(chain.init).concat(postInit).concat(chain.bind).concat(result) }
         )($listener);
-        
-        trace(new Printer().printExpr(res));
-        return res;
     }
     
     static function checkFields(expr:Expr):Array<FieldExpr> {
@@ -197,7 +194,7 @@ class BindExt {
             }
             prevField = field;
         }
-        //trace(expr.toString() + " " + [for (f in fields) f.bindable]);
+        
         return fields;
     }
     
@@ -226,7 +223,7 @@ class BindExt {
             return null;
         }
         if (first != null)
-            Context.warning('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos);
+            Warn.w('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos, WarnPriority.INFO);
         
         return prepareChain(fields, macro listener, expr, prefix);
     }
