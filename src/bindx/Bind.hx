@@ -39,13 +39,8 @@ class Bind {
 
 	public static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
 		var fieldData = warnCheckField(field);
-		return if (fieldData != null) {
-			if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
-			else BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
-		} else {
-			Context.fatalError('can\'t bind field ${field.expr}', field.pos);
-			macro {};
-		}
+		return if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
+		else BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
 	}
 
 	public static function internalBindTo(field:Expr, target:Expr):Expr {
@@ -114,15 +109,16 @@ class Bind {
 	}
 	
 	public static function isBindable(classType:ClassType):Bool {
-        if (classType.module == "bindx.IBindable" && classType.name == "IBindable")
-            return true;
-
-		var t = classType;
-		while (t != null) {
-			for (it in t.interfaces)
-                if (isBindable(it.t.get()))
-                    return true;
-			t = t.superClass != null ? t.superClass.t.get() : null;
+		var check = [classType];
+		while (check.length > 0) {
+			var t = check.shift();
+			while (t != null) {
+				if (t.module == "bindx.IBindable" && t.name == "IBindable")
+            		return true;
+				for (it in t.interfaces)
+	                check.push(it.t.get());
+				t = t.superClass != null ? t.superClass.t.get() : null;
+			}
 		}
 		return false;
 	}

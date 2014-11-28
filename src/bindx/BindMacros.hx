@@ -1,5 +1,6 @@
 package bindx;
 
+import bindx.Error;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -62,7 +63,7 @@ class BindMacros {
         var inlineSetter = meta.findParam(INLINE_SETTER);
         if (forceParam.isNotNullAndTrue()) {
             if (inlineSetter != null)
-                Context.warning('\'$INLINE_SETTER\' ignored. \'$FORCE\' mode', inlineSetter.pos);
+                Warn.w('\'$INLINE_SETTER\' ignored. \'$FORCE\' mode', inlineSetter.pos, WarnPriority.INFO);
             res.push(field);
             return;
         }
@@ -91,7 +92,7 @@ class BindMacros {
 
     		case FProp(get, set, type, expr):
                 if (inlineSetter != null)
-                    Context.warning('$INLINE_SETTER ignored. Setter already exist', inlineSetter.pos);
+                    Warn.w('$INLINE_SETTER ignored. Setter already exist', inlineSetter.pos, WarnPriority.INFO);
                 var fieldName = field.name;
                 var setter = fields.find(function (it) return it.name == 'set_$fieldName');
                 if (setter != null) {
@@ -111,7 +112,7 @@ class BindMacros {
 
     		case FFun(f):
                 if (inlineSetter != null)
-                    Context.warning('methods doesn\'t support \'$INLINE_SETTER\'', inlineSetter.pos);
+                    Warn.w('methods doesn\'t support \'$INLINE_SETTER\'', inlineSetter.pos, WarnPriority.INFO);
     			res.push(field);
     	}
     }
@@ -150,8 +151,7 @@ class BindMacros {
     static function isFieldBindable(field:Field, fields:Array<Field>, force = false):Bool {
 		if (field.name == "new") return false;
 
-		if (field.access.exists(function (it) return it.equals(AMacro) || it.equals(ADynamic) || it.equals(AStatic)))
-			return false;
+		if (field.access.exists(function (it) return it.equals(AMacro) || it.equals(ADynamic) || it.equals(AStatic))) return false;
 
 		if (field.name.startsWith("set_") || field.name.startsWith("get_")) {
 			var propName = field.name.substr(4);
