@@ -26,8 +26,8 @@ typedef Chain = {
     var expr:Expr;
     var zeroName:String;
 }
-
 #end
+
 @:access(bindx.BindMacros)
 class BindExt {
     
@@ -307,7 +307,7 @@ class BindExt {
         }
         
         if (zeroListener == null || zeroListener.f.bindable == false)
-            throw new bindx.Error("Chain is not bindable.", expr.pos);
+            throw new bindx.Error('${expr.toString()} is not bindable.', expr.pos);
             
         var zeroName = res.zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")

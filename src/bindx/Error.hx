@@ -1,5 +1,7 @@
 package bindx;
 
+#if macro
+
 import haxe.macro.Context;
 import haxe.macro.Expr.Position;
 
@@ -45,3 +47,4 @@ class Error {
         Context.fatalError(message, pos);
     }
 }
+#end

@@ -85,9 +85,9 @@ class BindSignalProvider implements IBindingSignalProvider {
         var args = switch (field.kind) {
             case FMethod(_): 
                 if (!isNull(oldValue))
-                    Context.error("method notify don't require oldValue", oldValue.pos);
+                    Context.error("method notify doesn't require oldValue", oldValue.pos);
                 if (!isNull(newValue))
-                    Context.error("method notify don't require newValue", newValue.pos);
+                    Context.error("method notify doesn't require newValue", newValue.pos);
                 [];
             case FVar(_, _):
                 [oldValue, newValue];
@@ -132,9 +132,8 @@ class BindSignalProvider implements IBindingSignalProvider {
             });
 
             var getter = macro function foo() {
-                if (this.$signalPrivateName == null) {
-                    this.$signalPrivateName = ${builder}
-                }
+                if (this.$signalPrivateName == null)
+                    this.$signalPrivateName = ${builder};
                 return $i{signalPrivateName};
             };
             var getterAccess = [APrivate];

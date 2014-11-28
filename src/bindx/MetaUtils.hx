@@ -13,9 +13,9 @@ class MetaUtils {
 	static public inline var BINDABLE_META = ":bindable";
 
 	static public function findParam(meta:MetadataEntry, name:String):Expr {
-        if (meta.params == null) {
+        if (meta.params == null)
             return null;
-        }
+
         for (p in meta.params) {
             switch (p.expr) {
                 case EBinop(OpAssign, e1, e2):
