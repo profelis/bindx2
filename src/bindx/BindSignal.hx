@@ -216,16 +216,33 @@ class Signal<T> {
         listeners = [];
         lock = 0;
     }
+    
+    inline function indexOf(listener:T):Int {
+        #if (neko || bindx_compareMethods)
+            var res = -1;
+            var i = 0;
+            for (l in listeners) {
+                if (Reflect.compareMethods(listener, l)) {
+                    res = i;
+                    break;
+                }
+                i++;
+            }
+            return res;
+        #else
+            return listeners.indexOf(listener);
+        #end
+    }
 
     public function add(listener:T):Void {
-        var pos = listeners.indexOf(listener);
+        var pos = indexOf(listener);
         checkLock();
         if (pos > -1) listeners.splice(pos, 1);
         listeners.push(listener);
     }
 
     public function remove(listener:T):Void {
-        var pos = listeners.indexOf(listener);
+        var pos = indexOf(listener);
         if (pos > -1) {
             checkLock();
             listeners.splice(pos, 1);
