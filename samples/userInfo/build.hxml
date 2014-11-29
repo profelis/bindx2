@@ -1,0 +1,5 @@
+-main Main
+-cp src
+#-lib bindx2
+-cp ../../src
+--interp
