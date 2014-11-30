@@ -23,7 +23,7 @@ class UserView {
         user = value;
         if (user != null) {
             // BindExt.exprTo auto dispatch first time
-            unbindOldUser = BindExt.exprTo("Hello " + user.name + ". You have " + user.coins + " coins", this.textField.text);
+            unbindOldUser = BindExt.exprTo('Hello ${user.name}. You have ' + user.coins + " coins", this.textField.text);
             
             Bind.bind(user.health, onHealthChange);
             // manual dispatch
