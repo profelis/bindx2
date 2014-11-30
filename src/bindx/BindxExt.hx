@@ -4,6 +4,7 @@ package bindx;
 
 import bindx.Error;
 import haxe.macro.Expr;
+import haxe.macro.MacroStringTools;
 import haxe.macro.Type;
 import haxe.macro.Context;
 import haxe.macro.Printer;
@@ -74,6 +75,15 @@ class BindExt {
         var prefix = 0;
         function findChain(expr:Expr) {
             var isChain;
+            
+            if (MacroStringTools.isFormatExpr(expr)) {
+                var f = switch (expr.expr) {
+                    case EConst(CString(s)): s;
+                    case _: null;
+                }
+                if (f != null)
+                    expr = MacroStringTools.formatString(f, expr.pos);
+            }
             var e = expr;
             var ecall = false;
             do switch (e.expr) {

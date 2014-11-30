@@ -27,10 +27,10 @@ class ExprBindTest extends BuddySuite {
                 var b = new BaseTest.Bindable1();
                 a.str = "a1";
                 b.str = "b1";
-                inline function val() return b.str + "ab".charAt(a.str.length - 2) + Std.string(1);
+                inline function val() return b.str + '${"ab".charAt(a.str.length - 2)}${Std.string(1)}';
                 
-                BindExt.exprTo(b.str + "ab".charAt(a.str.length - 2) + Std.string(1), target.a);
-                BindExt.expr(b.str + "ab".charAt(a.str.length - 2) + Std.string(1), function (f, to:String) {
+                BindExt.exprTo(b.str + '${"ab".charAt(a.str.length - 2)}${Std.string(1)}', target.a);
+                BindExt.expr(b.str + '${"ab".charAt(a.str.length - 2)}${Std.string(1)}', function (f, to:String) {
                     f.should.be(from);
                     from = to;
                     to.should.be(val());
