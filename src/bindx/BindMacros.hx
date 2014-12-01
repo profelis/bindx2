@@ -55,7 +55,7 @@ class BindMacros {
         return res;
     }
 
-    static function bindField(field:Field, fields:Array<Field>, res:Array<Field>) {
+    static function bindField(field:Field, fields:Array<Field>, res:Array<Field>):Void {
         var meta = field.bindableMeta();
         bindingSignalProvider.getFieldDispatcher(field, res);
 
@@ -134,7 +134,7 @@ class BindMacros {
         }
     }
 
-    static inline function injectBindableMeta(fields:Array<Field>, meta:MetadataEntry) {
+    static inline function injectBindableMeta(fields:Array<Field>, meta:MetadataEntry):Void {
     	for (f in fields) {
     		if (f.hasBindableMeta()) continue;
             if (f.access.exists(function (it) return it.equals(APrivate))) continue;
