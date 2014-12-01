@@ -30,11 +30,11 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function new() {}
 
-    @:extern static inline function signalName(fieldName:String) return fieldName + SIGNAL_POSTFIX;
-    @:extern static inline function signalGetterName(fieldName:String) return "get_" + signalName(fieldName);
-    @:extern static inline function signalPrivateName(fieldName:String) return "_" + signalName(fieldName);
+    @:extern static inline function signalName(fieldName:String):String return fieldName + SIGNAL_POSTFIX;
+    @:extern static inline function signalGetterName(fieldName:String):String return "get_" + signalName(fieldName);
+    @:extern static inline function signalPrivateName(fieldName:String):String return "_" + signalName(fieldName);
 
-    public function getFieldDispatcher(field:Field, res:Array<Field>) {
+    public function getFieldDispatcher(field:Field, res:Array<Field>):Void {
         switch (field.kind) {
             case FFun(_):
                 generateSignal(field, macro : bindx.BindSignal.MethodSignal, macro new bindx.BindSignal.MethodSignal(), res);
@@ -109,7 +109,7 @@ class BindSignalProvider implements IBindingSignalProvider {
         }
     }
 
-    function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>) {
+    function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>):Void {
         var signalName = signalName(field.name);
         var meta = field.bindableMeta();
         var inlineSignalGetter = meta.findParam(INLINE_SIGNAL_GETTER);
@@ -159,7 +159,7 @@ class BindSignalProvider implements IBindingSignalProvider {
         }
     }
 
-    inline function dispatchSignal(expr:Expr, fieldName:String, args:Array<Expr>, lazy:Bool) {
+    inline function dispatchSignal(expr:Expr, fieldName:String, args:Array<Expr>, lazy:Bool):Expr {
         return 
             if (lazy) {
                 var signalPrivateName = signalPrivateName(fieldName);
@@ -172,7 +172,7 @@ class BindSignalProvider implements IBindingSignalProvider {
             }
     }
 
-    @:extern inline function hasLazy(meta:MetadataEntry) {
+    @:extern inline function hasLazy(meta:MetadataEntry):Bool {
         return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
     }
     
@@ -212,7 +212,7 @@ class Signal<T> {
         removeAll();
     }
 
-    public inline function removeAll() {
+    public inline function removeAll():Void {
         listeners = [];
         lock = 0;
     }
@@ -249,7 +249,7 @@ class Signal<T> {
         }
     }
 
-    inline function checkLock() {
+    inline function checkLock():Void {
         if (lock > 0) {
             listeners = listeners.copy();
             lock = 0;
