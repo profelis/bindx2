@@ -25,7 +25,6 @@ typedef Chain = {
     var bind:Array<Expr>;
     var unbind:Array<Expr>;
     var expr:Expr;
-    var zeroName:String;
 }
 #end
 
@@ -69,7 +68,7 @@ class BindExt {
         var fieldListenerNameExpr = macro $i{fieldListenerName};
         var methodListenerName = "methodListener";
         var methodListenerNameExpr = macro $i{methodListenerName};
-        var chain:Chain = { init:[], bind:[], unbind:[], expr:expr, zeroName:null };
+        var chain:Chain = { init:[], bind:[], unbind:[], expr:expr };
         var binded:Map<String, {prebind:Expr, c:Chain}> = new Map();
         
         var prefix = 0;
@@ -241,7 +240,7 @@ class BindExt {
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
     static function prepareChain(fields:Array<FieldExpr>, expr:Expr, listener:Expr, prefix = ""):Chain {
-        var res:Chain = { init:[], bind:[], unbind:[], expr:null, zeroName:null };
+        var res:Chain = { init:[], bind:[], unbind:[], expr:null };
         
         var prevListenerName = listenerName(0, prefix);
         var prevListenerNameExpr = macro $i { prevListenerName };
@@ -319,7 +318,7 @@ class BindExt {
         if (zeroListener == null || zeroListener.f.bindable == false)
             throw new bindx.Error('${expr.toString()} is not bindable.', expr.pos);
             
-        var zeroName = res.zeroName = zeroListener.f.e.toString();
+        var zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")
             res.init.unshift(macro var $zeroName = $i{zeroName});
         
