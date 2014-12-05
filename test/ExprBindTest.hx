@@ -1,7 +1,7 @@
 package ;
 
 import bindx.Bind;
-import bindx.BindxExt;
+import bindx.BindExt;
 import bindx.IBindable;
 import buddy.BuddySuite;
 
