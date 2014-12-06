@@ -6,7 +6,7 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 
 interface IBindingSignalProvider {
-	
+
     function getFieldDispatcher(field:Field, result:Array<Field>):Void;
     function getFieldChangedExpr(field:Field, oldValue:Expr, newValue:Expr):Expr;
 

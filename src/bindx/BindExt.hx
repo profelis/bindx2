@@ -29,6 +29,7 @@ typedef Chain = {
 #end
 
 @:access(bindx.BindMacros)
+@:access(bindx.Bind)
 class BindExt {
     
     @:noUsing macro static public function expr<T>(expr:ExprOf<T>, listener:ExprOf<Null<T>->Null<T>->Void>):ExprOf<Void->Void> {
@@ -51,7 +52,7 @@ class BindExt {
     
     #if macro
     
-    public static function internalBindChain(expr:Expr, listener:Expr):Expr {
+    static function internalBindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
         var chain = null;
         try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:bindx.Error) e.contextError();
@@ -61,7 +62,7 @@ class BindExt {
         )($listener);
     }
     
-    public static function internalBindExpr(expr:Expr, listener:Expr):Expr {
+    static function internalBindExpr(expr:Expr, listener:Expr):Expr {
         var type = Context.typeof(expr).toComplexType();
         var listenerNameExpr = macro listener;
         var fieldListenerName = "fieldListener";
@@ -146,13 +147,12 @@ class BindExt {
         
         var zeroListener = listenerName(0, "");
         var zeroValue = 'value0';
+        chain.unbind.unshift(macro $i { zeroValue } = null);
         
         var callListener = switch (type) {
             case macro : Void: macro if (!init) $i{zeroListener}();
             case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}($i{zeroValue}, $i{zeroValue} = v); }; 
         }
-        
-        chain.unbind.unshift(macro $i{zeroValue} = null);
 
         var preInit = [
             (macro var init:Bool = true),
@@ -203,7 +203,6 @@ class BindExt {
             }
             prevField = field;
         }
-        
         return fields;
     }
     

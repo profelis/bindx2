@@ -37,23 +37,23 @@ class Bind {
 
 	#if macro
 
-	public static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
+	static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
 		var fieldData = warnCheckField(field);
 		return if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
 		else BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
 	}
 
-	public static function internalBindTo(field:Expr, target:Expr):Expr {
+	static function internalBindTo(field:Expr, target:Expr):Expr {
 		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
 	}
 
-	public static function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
+	static function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
 		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
 
-	public static function internalUnbindAll(object:ExprOf<IBindable>):Expr {
+	static function internalUnbindAll(object:ExprOf<IBindable>):Expr {
         var type = Context.typeof(object).follow();
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
@@ -74,7 +74,7 @@ class Bind {
 		return res;
 	}
 	
-	public static function checkField(f:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
+	static function checkField(f:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
 		var error:bindx.Error;
 		switch (f.expr) {
 			case EField(e, field):
@@ -108,7 +108,7 @@ class Bind {
 		return {e:f, field:null, error:new bindx.Error('\'${f.toString()}\' is not bindable', f.pos)};
 	}
 	
-	public static function isBindable(classType:ClassType):Bool {
+	static function isBindable(classType:ClassType):Bool {
 		var check = [classType];
 		while (check.length > 0) {
 			var t = check.shift();
