@@ -1,7 +1,7 @@
 package bindx;
 
 #if macro
-import bindx.Error;
+import bindx.GenericError;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
@@ -68,14 +68,14 @@ class Bind {
 			if (res.error != null) res.error.contextError();
 		} catch (e:FatalError) {
 			e.contextFatal();
-		} catch (e:bindx.Error) { 
+		} catch (e:GenericError) { 
 			e.contextError();
 		};
 		return res;
 	}
 	
-	static function checkField(f:Expr):{e:Expr, field:ClassField, error:bindx.Error} {
-		var error:bindx.Error;
+	static function checkField(f:Expr):{e:Expr, field:ClassField, error:GenericError} {
+		var error:GenericError;
 		switch (f.expr) {
 			case EField(e, field):
 				var type = Context.typeof(e);
@@ -85,7 +85,7 @@ class Bind {
 					return {e:f, field:null, error:error};
 				}
 				if (!isBindable(classType)) {
-					error = new bindx.Error('\'${e.toString()}\' must be bindx.IBindable', e.pos);
+					error = new GenericError('\'${e.toString()}\' must be bindx.IBindable', e.pos);
 				}
 				
 				var field:ClassField = classType.findField(field, null);
@@ -95,17 +95,17 @@ class Bind {
 				}
 
 				if (!field.hasBindableMeta()) {
-					error = new bindx.Error('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
+					error = new GenericError('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
 				}
 
 				return {e:e, field:field, error:error};
 
             case EConst(CIdent(_)):
-            	return {e:f, field:null, error:new bindx.Error('Can\'t bind \'${f.toString()}\'. Please use \'this.${f.toString()}\'', f.pos)};
+            	return {e:f, field:null, error:new GenericError('Can\'t bind \'${f.toString()}\'. Please use \'this.${f.toString()}\'', f.pos)};
 
 			case _:
 		}
-		return {e:f, field:null, error:new bindx.Error('\'${f.toString()}\' is not bindable', f.pos)};
+		return {e:f, field:null, error:new GenericError('\'${f.toString()}\' is not bindable', f.pos)};
 	}
 	
 	static function isBindable(classType:ClassType):Bool {

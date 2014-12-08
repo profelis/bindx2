@@ -1,6 +1,6 @@
 package bindx;
 
-import bindx.Error;
+import bindx.GenericError;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;

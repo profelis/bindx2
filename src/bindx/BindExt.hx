@@ -2,7 +2,7 @@ package bindx;
 
 #if macro
 
-import bindx.Error;
+import bindx.GenericError;
 import haxe.macro.Expr;
 import haxe.macro.MacroStringTools;
 import haxe.macro.Type;
@@ -55,7 +55,7 @@ class BindExt {
     static function internalBindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
         var chain = null;
-        try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:bindx.Error) e.contextError();
+        try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:GenericError) e.contextError();
         
         return macro (function ($zeroListener):Void->Void
             $b { chain.init.concat(chain.bind).concat([macro return function ():Void $b { chain.unbind }]) }
@@ -108,7 +108,7 @@ class BindExt {
                 var c = null;
                 try { 
                     c = warnPrepareChain(expr, macro $i { zeroListener }, pre, true); 
-                } catch (e:bindx.Error) {
+                } catch (e:GenericError) {
                     Warn.w('${expr.toString()} is not bindable.', e.pos, WarnPriority.ALL);
                 }
                 if (c != null) {
@@ -227,7 +227,7 @@ class BindExt {
         }
         var bindableNum = fields.fold(function (it, n) return n += it.bindable ? 1 : 0, 0);
         if (bindableNum == 0) {
-            throw new bindx.Error('${expr.toString()} is not bindable.', expr.pos);
+            throw new GenericError('${expr.toString()} is not bindable.', expr.pos);
             return null;
         }
         if (first != null)
@@ -315,7 +315,7 @@ class BindExt {
         }
         
         if (zeroListener == null || zeroListener.f.bindable == false)
-            throw new bindx.Error('${expr.toString()} is not bindable.', expr.pos);
+            throw new GenericError('${expr.toString()} is not bindable.', expr.pos);
             
         var zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")

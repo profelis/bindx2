@@ -23,9 +23,9 @@ class Warn {
     }
 }
 
-class FatalError extends Error {}
+class FatalError extends GenericError {}
 
-class Error {
+class GenericError {
     
     public var pos(default, null):Position;
     public var message(default, null):String;
