@@ -65,7 +65,7 @@ class Bind {
 		var res = null;
 		try {
 			res = checkField(field);
-			if (res.error != null) throw res.error;
+			if (res.error != null) res.error.contextError();
 		} catch (e:FatalError) {
 			e.contextFatal();
 		} catch (e:bindx.Error) { 
