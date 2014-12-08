@@ -50,7 +50,7 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getClassFieldBindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
         var signalName = signalName(field.name);
-        return macro $expr.$signalName.add($listener);
+        return macro @:privateAccess $expr.$signalName.add($listener);
     }
 
     public function getClassFieldBindToExpr(expr:Expr, field:ClassField, target:Expr):Expr {
@@ -76,9 +76,9 @@ class BindSignalProvider implements IBindingSignalProvider {
     public function getClassFieldUnbindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
         var signalName = signalName(field.name);
         return if (!isNull(listener))
-            macro $expr.$signalName.remove($listener);
+            macro @:privateAccess $expr.$signalName.remove($listener);
         else
-            macro $expr.$signalName.removeAll();
+            macro @:privateAccess $expr.$signalName.removeAll();
     }
 
     public function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr {
@@ -163,12 +163,13 @@ class BindSignalProvider implements IBindingSignalProvider {
         return 
             if (lazy) {
                 var signalPrivateName = signalPrivateName(fieldName);
-                macro if ($expr.$signalPrivateName != null) {
-                    $expr.$signalPrivateName.dispatch($a{args});
-               }
+                macro @:privateAccess {
+                    if ($expr.$signalPrivateName != null)
+                        $expr.$signalPrivateName.dispatch($a { args } );
+                }
             } else {
                 var signalName = signalName(fieldName);
-                macro $expr.$signalName.dispatch($a{args});
+                macro @:privateAccess $expr.$signalName.dispatch($a { args } );
             }
     }
 
