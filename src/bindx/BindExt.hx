@@ -52,7 +52,7 @@ class BindExt {
     
     #if macro
     
-    static function internalBindChain(expr:Expr, listener:Expr):Expr {
+    static inline function internalBindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
         var chain = null;
         try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:GenericError) e.contextError();

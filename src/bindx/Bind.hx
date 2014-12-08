@@ -37,23 +37,23 @@ class Bind {
 
 	#if macro
 
-	static function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
+	static inline function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
 		var fieldData = warnCheckField(field);
 		return if (doBind) BindMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
 		else BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
 	}
 
-	static function internalBindTo(field:Expr, target:Expr):Expr {
+	static inline function internalBindTo(field:Expr, target:Expr):Expr {
 		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
 	}
 
-	static function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
+	static inline function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
 		var fieldData = warnCheckField(field);
 		return BindMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
 	}
 
-	static function internalUnbindAll(object:ExprOf<IBindable>):Expr {
+	static inline function internalUnbindAll(object:ExprOf<IBindable>):Expr {
         var type = Context.typeof(object).follow();
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
@@ -61,7 +61,7 @@ class Bind {
 		return BindMacros.bindingSignalProvider.getUnbindAllExpr(object, type);
 	}
 
-	static function warnCheckField(field:Expr):{e:Expr, field:ClassField} {
+	static inline function warnCheckField(field:Expr):{e:Expr, field:ClassField} {
 		var res = null;
 		try {
 			res = checkField(field);
@@ -108,19 +108,22 @@ class Bind {
 		return {e:f, field:null, error:new GenericError('\'${f.toString()}\' is not bindable', f.pos)};
 	}
 	
-	static function isBindable(classType:ClassType):Bool {
+	static inline function isBindable(classType:ClassType):Bool {
 		var check = [classType];
-		while (check.length > 0) {
+        var res = false;
+		while (check.length > 0 && !res) {
 			var t = check.shift();
 			while (t != null) {
-				if (t.module == "bindx.IBindable" && t.name == "IBindable")
-            		return true;
+				if (t.module == "bindx.IBindable" && t.name == "IBindable") {
+            		res = true;
+                    break;
+                }
 				for (it in t.interfaces)
 	                check.push(it.t.get());
 				t = t.superClass != null ? t.superClass.t.get() : null;
 			}
 		}
-		return false;
+		return res;
 	}
 	#end
 }

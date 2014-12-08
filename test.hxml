@@ -6,3 +6,5 @@
 -lib buddy
 -D reporter=buddy.reporting.TravisHxReporter
 -D console_log
+--times
+-D macro_times

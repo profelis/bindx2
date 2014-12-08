@@ -12,23 +12,29 @@ class MetaUtils {
 
 	static public inline var BINDABLE_META = ":bindable";
 
-	static public function findParam(meta:MetadataEntry, name:String):Expr {
-        if (meta.params == null)
-            return null;
+	static public inline function findParam(meta:MetadataEntry, name:String):Expr {
+        var res = null;
 
-        for (p in meta.params) {
+        if (meta.params != null) for (p in meta.params) {
             switch (p.expr) {
                 case EBinop(OpAssign, e1, e2):
-                    if (e1.toString() == name) return {expr:e2.expr, pos:p.pos};
+                    if (e1.toString() == name) res = {expr:e2.expr, pos:p.pos};
                 case _:
                     Context.warning('Bindable arguments syntax error. Supported syntax: (flag1=true, flag2=false)', p.pos);
             }
+            if (res != null) break;
         }
-        return null;
+        return res;
     }
 
-    static public inline function bindableMeta(meta:Metadata):MetadataEntry
-        return meta.find(function (it) return it.name == BINDABLE_META);
+    static public inline function bindableMeta(meta:Metadata):MetadataEntry {
+        var res = null;
+        for (m in meta) if (m.name == BINDABLE_META) {
+            res = m;
+            break;
+        }
+        return res;
+    }
 }
 
 class FieldMetaUtils {
