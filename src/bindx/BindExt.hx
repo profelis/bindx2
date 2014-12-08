@@ -188,15 +188,13 @@ class BindExt {
             if (field.field != null) {
                 fields.push( { field:field.field, bindable:field.error == null, e:field.e } );
                 end = false;
-            } else if (field.error != null) {
-                switch (prevField.e.expr) {
-                    case ECall(e, params):
-                        field = Bind.checkField(e);
-                        if (field.field == null) throw new FatalError('${e.toString()} is not bindable.', expr.pos);
-                        else fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
-                        end = false;
-                    case _:
-                }
+            } else if (field.error != null) switch (prevField.e.expr) {
+                case ECall(e, params):
+                    field = Bind.checkField(e);
+                    if (field.field == null) throw new FatalError('${e.toString()} is not bindable.', expr.pos);
+                    else fields.push( { e:field.e, field:field.field, params:params, bindable:field.error == null } );
+                    end = false;
+                case _:
             }
             else if (field.e == null) {
                 throw new FatalError('${prevField.e.toString()} is not bindable.', prevField.e.pos);
@@ -287,7 +285,6 @@ class BindExt {
                     $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
             var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null] } );
-            //fieldListenerBody.push(macro trace(Std.string(o) + " -> " + Std.string(n)));
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
@@ -304,7 +301,6 @@ class BindExt {
                         ${BindMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
                     );
                 }
-                
                 fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void $b { fieldListenerBody };
             }
         
