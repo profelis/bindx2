@@ -62,6 +62,16 @@ class BindExt {
         )($listener);
     }
     
+    static inline function unwrapFormatedString(expr:Expr):Expr {
+        return if (MacroStringTools.isFormatExpr(expr)) {
+            var f = switch (expr.expr) {
+                case EConst(CString(s)): s;
+                case _: null;
+            }
+            if (f != null) MacroStringTools.formatString(f, expr.pos) else expr;
+        } else expr;
+    }
+    
     static function internalBindExpr(expr:Expr, listener:Expr):Expr {
         var type = Context.typeof(expr).toComplexType();
         var listenerNameExpr = macro listener;
@@ -75,15 +85,7 @@ class BindExt {
         var prefix = 0;
         function findChain(expr:Expr) {
             var isChain;
-            
-            if (MacroStringTools.isFormatExpr(expr)) {
-                var f = switch (expr.expr) {
-                    case EConst(CString(s)): s;
-                    case _: null;
-                }
-                if (f != null)
-                    expr = MacroStringTools.formatString(f, expr.pos);
-            }
+            expr = unwrapFormatedString(expr);
             var e = expr;
             var ecall = false;
             do switch (e.expr) {
