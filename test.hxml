@@ -2,9 +2,5 @@
 -cp src
 -cp test
 -D dump=pretty
---interp
+-neko bin/test.n
 -lib buddy
--D reporter=buddy.reporting.TravisHxReporter
--D console_log
---times
--D macro_times
