@@ -33,8 +33,6 @@ env:
       # optional: FILENAME
     - TARGET=cs
       # optional: FILENAME
-    - TARGET=swf8
-      # optional: FILENAME
     - TARGET=python
       # optional: FILENAME
       # optional: PYTHONCMD
