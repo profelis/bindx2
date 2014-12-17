@@ -1,5 +1,4 @@
 package bindx;
-import Type;
 
 #if macro
 
