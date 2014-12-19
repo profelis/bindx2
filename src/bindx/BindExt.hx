@@ -41,7 +41,7 @@ class BindExt {
         return internalBindExpr(expr, macro function (_, to:Null<$type>) $target = to);
     }
     
-    @:noUsing macro static public function chain<T>(expr:ExprOf<T>, listener:ExprOf<Null<T>->Null<T>->Void>):ExprOf<Void->Void> {
+    @:noUsing macro static public function chain<T>(expr:ExprOf<T>, listener:Expr):ExprOf<Void->Void> {
         return internalBindChain(expr, listener);
     }
     
