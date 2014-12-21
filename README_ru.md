@@ -14,7 +14,7 @@
 
 ======
 
-## Пример:
+## Примеры:
 
 ```haxe
 // UserModel.hx
@@ -47,6 +47,8 @@ function onHealthChange(from:Null<Float>, to:Null<Float>) {
     trace('user health changed from $from to $to');
 }
 ```
+
+[Все примеры](https://github.com/profelis/bindx2/tree/master/samples/)
 
 ======
 
