@@ -101,6 +101,12 @@ Log level    | Description
 
 ======
 
+## Установка:
+
+`haxelib install bindx2`
+
+======
+
 ## Дополнительно
 
 `-D bindx_compareMethods` включает сравнение методов с помощью `Reflect.compareMethods` (включено для neko по умолчанию)

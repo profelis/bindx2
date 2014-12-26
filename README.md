@@ -101,6 +101,12 @@ Log level    | Description
 
 ======
 
+## Installation:
+
+`haxelib install bindx2`
+
+======
+
 ## Additional
 
 `-D bindx_compareMethods` enables methods comparing with `Reflect.compareMethods` (enabled for Neko by default)
