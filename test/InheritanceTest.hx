@@ -41,13 +41,14 @@ class InheritanceTest extends BuddySuite {
 }
 
 interface IIBindable extends IBindable {
-    
+    @:bindable
+    var i(default, set):Int;
 }
 
-@:bindable
 class BindableParent implements IIBindable {
 	public function new() {}
-
+    
+    @:bindable
 	public var i:Int;
 }
 

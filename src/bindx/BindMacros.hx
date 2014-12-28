@@ -31,14 +31,20 @@ class BindMacros {
     macro static public function buildIBindable():Array<Field> {
         var type = Context.getLocalType();
         if (processed.indexOf(type) > -1) {
-        	return null;
+            return null;
         }
         processed.push(type);
+
+        var classType = type.getClass();
+        
+        if (classType.isInterface) {
+            return null;
+        }
+        
         if (bindingSignalProvider == null) {
             bindingSignalProvider = new bindx.BindSignal.BindSignalProvider();
         }
-
-        var classType = type.getClass();
+        
         var fields = Context.getBuildFields();
 
         var meta = classType.bindableMeta();
