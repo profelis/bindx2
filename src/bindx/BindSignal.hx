@@ -58,14 +58,14 @@ class BindSignalProvider implements IBindingSignalProvider {
         return switch (field.kind) {
             case FMethod(_):
                 var fieldName = field.name;
-                macro {
+                macro @:privateAccess {
                     var listener = function () $target = $expr.$fieldName();
                     $expr.$signalName.add(listener);
                     function __unbind__() $expr.$signalName.remove(listener);
                 }
             case FVar(_, _):
                 var type = field.type.follow().toComplexType();
-                macro {
+                macro @:privateAccess {
                     var listener = function (from:$type, to:$type) $target = to;
                     $expr.$signalName.add(listener);
                     function __unbind__() $expr.$signalName.remove(listener);
