@@ -27,7 +27,7 @@ env:
       # optional: FILENAME
     - TARGET=swf
       # optional: FILENAME
-    - TARGET=as3 
+    # - TARGET=as3 
       # optional: FILENAME
     - TARGET=java
       # optional: FILENAME
