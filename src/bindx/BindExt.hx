@@ -58,7 +58,7 @@ class BindExt {
         try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:GenericError) e.contextError();
         
         return macro (function ($zeroListener):Void->Void
-            $b { chain.init.concat(chain.bind).concat([macro return function ():Void $b { chain.unbind }]) }
+            $b { chain.init.concat(chain.bind).concat([(macro var res = function ():Void $b { chain.unbind }), macro return res]) }
         )($listener);
     }
     
@@ -166,7 +166,7 @@ class BindExt {
             macro function $methodListenerName() $callListener
         ];
         
-        var result = [macro init = false, macro $i{methodListenerName}(), macro return function ():Void $b { chain.unbind }];
+        var result = [macro init = false, macro $i { methodListenerName } (), (macro var res = function ():Void $b { chain.unbind }), macro return res ];
         
         return macro (function ($zeroListener):Void->Void
             $b { preInit.concat(chain.init).concat(postInit).concat(chain.bind).concat(result) }
