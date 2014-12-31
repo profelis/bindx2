@@ -12,12 +12,16 @@ import haxe.macro.Expr.Position;
 }
 
 class Warn {
-    static var level:WarnPriority = null;
+    @:isVar static var level(get, null):WarnPriority = null;
     
-    public static function w(msg:String, pos:Position, level:WarnPriority) {
+    static function get_level():WarnPriority {
         if (Warn.level == null) {
             Warn.level = Context.defined("bindx_log") ? Std.parseInt(Context.definedValue("bindx_log")) : LOW;
         }
+        return Warn.level;
+    }
+    
+    public static function w(msg:String, pos:Position, level:WarnPriority) {
         if ((Warn.level : Int) >= (level : Int))
             Context.warning(msg, pos);
     }

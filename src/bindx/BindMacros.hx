@@ -37,18 +37,26 @@ class BindMacros {
 
         var classType = type.getClass();
         
-        if (classType.isInterface) {
-            return null;
-        }
-        
         if (bindingSignalProvider == null) {
             bindingSignalProvider = new bindx.BindSignal.BindSignalProvider();
         }
         
         var fields = Context.getBuildFields();
+        
+        if (classType.isInterface) {
+            for (f in fields) {
+                for (m in f.meta) if (m.name == MetaUtils.BINDABLE_META) {
+                    if (m.params.length > 0)
+                        Context.warning('Interface doesn\'t support @:bindable meta params', m.pos);
+                }
+            }
+            return null;
+        }
 
         var meta = classType.bindableMeta();
         if (meta != null) injectBindableMeta(fields, meta);
+        
+        var interfaceFields = getBindableFieldsFromInterfaces(classType);
 
         var res = [];
         for (f in fields)
@@ -56,9 +64,28 @@ class BindMacros {
         		if (!isFieldBindable(f, fields)) Context.error('can\'t bind field \'${f.name}\'', f.pos);
 
         		bindField(f, fields, res);
-        	} else res.push(f);
+        	} else {
+                if (interfaceFields.exists(f.name))
+                    Context.fatalError('Interface "${interfaceFields.get(f.name)}" expects @:bindable metadata', f.pos);
+                res.push(f);
+            }
 
         return res;
+    }
+    
+    static function getBindableFieldsFromInterfaces(classType:ClassType):Map<String, String> {
+        var interfaceFields = new Map();
+        for (i in classType.interfaces) {
+            var t = i.t.get();
+            if (@:privateAccess Bind.isBindable(t)) {
+                for (f in t.fields.get()) {
+                    if (f.meta.has(MetaUtils.BINDABLE_META)) {
+                        interfaceFields.set(f.name, t.module + (t.module.length > 0 ? "." + t.name : t.name));
+                    }
+                }
+            }
+        }
+        return interfaceFields;
     }
 
     static function bindField(field:Field, fields:Array<Field>, res:Array<Field>):Void {
