@@ -66,21 +66,25 @@ class BindMacros {
         		bindField(f, fields, res);
         	} else {
                 if (interfaceFields.exists(f.name))
-                    Context.fatalError('Interface "${interfaceFields.get(f.name)}" expects @:bindable metadata', f.pos);
+                    Context.fatalError('Interface "${typeName(interfaceFields.get(f.name))}" expects @:bindable metadata', f.pos);
                 res.push(f);
             }
 
         return res;
     }
     
-    static function getBindableFieldsFromInterfaces(classType:ClassType):Map<String, String> {
+    inline static function typeName(t: { module:String, name:String } ) {
+        return t.module + (t.module.length > 0 ? "." + t.name : t.name);
+    }
+    
+    static function getBindableFieldsFromInterfaces(classType:ClassType):Map<String, ClassType> {
         var interfaceFields = new Map();
         for (i in classType.interfaces) {
             var t = i.t.get();
             if (@:privateAccess Bind.isBindable(t)) {
                 for (f in t.fields.get()) {
                     if (f.meta.has(MetaUtils.BINDABLE_META)) {
-                        interfaceFields.set(f.name, t.module + (t.module.length > 0 ? "." + t.name : t.name));
+                        interfaceFields.set(f.name, t);
                     }
                 }
             }
