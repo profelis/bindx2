@@ -5,8 +5,8 @@
     "tags": ["bind", "binding", "bindings", "cross"],
     "description": "Powerful and fast macro-based data binding engine inspired by Flex Bindings with easy-to-use syntax.",
     "classPath": "src",
-    "version": "2.0.1",
-    "releasenote": "haxe night build support, fix interfaces processing",
+    "version": "2.1.0",
+    "releasenote": "interface fields support @:bindable meta",
     "contributors": [
         "deep"
     ]

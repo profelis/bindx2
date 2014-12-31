@@ -43,6 +43,9 @@ class BindMacros {
         
         var fields = Context.getBuildFields();
         
+        var meta = classType.bindableMeta();
+        if (meta != null) injectBindableMeta(fields, meta);
+        
         if (classType.isInterface) {
             for (f in fields) {
                 for (m in f.meta) if (m.name == MetaUtils.BINDABLE_META) {
@@ -50,11 +53,8 @@ class BindMacros {
                         Context.warning('Interface doesn\'t support @:bindable meta params', m.pos);
                 }
             }
-            return null;
+            return fields;
         }
-
-        var meta = classType.bindableMeta();
-        if (meta != null) injectBindableMeta(fields, meta);
         
         var interfaceFields = getBindableFieldsFromInterfaces(classType);
 
