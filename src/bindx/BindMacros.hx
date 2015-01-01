@@ -4,11 +4,13 @@ import bindx.GenericError;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import haxe.macro.TypeTools;
 
 using haxe.macro.Tools;
 using Lambda;
 using StringTools;
 using bindx.MetaUtils;
+using haxe.macro.Tools;
 
 class BindMacros {
     #if macro
@@ -24,21 +26,25 @@ class BindMacros {
      */
     static public inline var FORCE = "force";
 
-	static var processed:Array<Type> = [];
+	static var processed:Array<String> = [];
 
     static var bindingSignalProvider:IBindingSignalProvider;
+    
+    static var interfaceBindableFields:Map<String, Array<String>>;
 
     macro static public function buildIBindable():Array<Field> {
         var type = Context.getLocalType();
-        if (processed.indexOf(type) > -1) {
+        var tName = type.toComplexType().toString();
+        if (processed.indexOf(tName) > -1) {
             return null;
         }
-        processed.push(type);
+        processed.push(tName);
 
         var classType = type.getClass();
         
         if (bindingSignalProvider == null) {
             bindingSignalProvider = new bindx.BindSignal.BindSignalProvider();
+            interfaceBindableFields = new Map();
         }
         
         var fields = Context.getBuildFields();
@@ -47,17 +53,20 @@ class BindMacros {
         if (meta != null) injectBindableMeta(fields, meta);
         
         if (classType.isInterface) {
+            var a = [];
             for (f in fields) {
                 for (m in f.meta) if (m.name == MetaUtils.BINDABLE_META) {
+                    a.push(f.name);
                     if (m.params.length > 0)
                         Context.warning('Interface doesn\'t support @:bindable meta params', m.pos);
                 }
             }
+            interfaceBindableFields.set(typeName(classType), a);
             return fields;
         }
         
         var interfaceFields = getBindableFieldsFromInterfaces(classType);
-
+        
         var res = [];
         for (f in fields)
         	if (f.hasBindableMeta()) {
@@ -79,16 +88,17 @@ class BindMacros {
     
     static function getBindableFieldsFromInterfaces(classType:ClassType):Map<String, ClassType> {
         var interfaceFields = new Map();
-        for (i in classType.interfaces) {
-            var t = i.t.get();
-            if (@:privateAccess Bind.isBindable(t)) {
-                for (f in t.fields.get()) {
-                    if (f.meta.has(MetaUtils.BINDABLE_META)) {
-                        interfaceFields.set(f.name, t);
-                    }
-                }
+        
+        function iter(t:ClassType) {
+            var a = interfaceBindableFields.get(typeName(t));
+            if (a != null) {
+                for (i in a)
+                    interfaceFields.set(i, t);
             }
+            for (it in t.interfaces) iter(it.t.get());
         }
+        
+        for (i in classType.interfaces) iter(i.t.get());
         return interfaceFields;
     }
 

@@ -46,7 +46,9 @@ interface IIBindable extends IBindable {
     var i(default, set):Int;
 }
 
-class BindableParent implements IIBindable {
+interface IIIBindable extends IIBindable { }
+
+class BindableParent implements IIIBindable {
 	public function new() {}
     
     @:bindable
@@ -54,7 +56,7 @@ class BindableParent implements IIBindable {
 }
 
 @:bindable
-class BindableChild extends BindableParent {
+class BindableChild extends BindableParent implements IIBindable {
 	
 	public var s:String;
 }
