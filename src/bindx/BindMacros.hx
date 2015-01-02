@@ -25,13 +25,13 @@ class BindMacros {
      * default value: false
      */
     static public inline var FORCE = "force";
+    
+    static public inline var BINDABLE_FIELDS = "bindableFields";
 
 	static var processed:Array<String> = [];
 
     static var bindingSignalProvider:IBindingSignalProvider;
     
-    static var interfaceBindableFields:Map<String, Array<String>>;
-
     macro static public function buildIBindable():Array<Field> {
         var type = Context.getLocalType();
         var tName = type.toComplexType().toString();
@@ -44,7 +44,6 @@ class BindMacros {
         
         if (bindingSignalProvider == null) {
             bindingSignalProvider = new bindx.BindSignal.BindSignalProvider();
-            interfaceBindableFields = new Map();
         }
         
         var fields = Context.getBuildFields();
@@ -61,7 +60,10 @@ class BindMacros {
                         Context.warning('Interface doesn\'t support @:bindable meta params', m.pos);
                 }
             }
-            interfaceBindableFields.set(typeName(classType), a);
+            var classMeta = classType.meta;
+            if (classMeta.has(BINDABLE_FIELDS))
+                classMeta.remove(BINDABLE_FIELDS);
+            classMeta.add(BINDABLE_FIELDS, [macro $v { a } ], classType.pos);
             return fields;
         }
         
@@ -90,10 +92,18 @@ class BindMacros {
         var interfaceFields = new Map();
         
         function iter(t:ClassType) {
-            var a = interfaceBindableFields.get(typeName(t));
-            if (a != null) {
-                for (i in a)
-                    interfaceFields.set(i, t);
+            var meta = t.meta.get();
+            var m = meta.find(function (it) return it.name == BINDABLE_FIELDS);
+            if (m != null && m.params.length > 0) {
+                var a = m.params[0];
+                switch a.expr {
+                    case EArrayDecl(values):
+                        for (v in values) {
+                            var value = switch v.expr { case EConst(CString(s)): s; case _: null; };
+                            interfaceFields.set(value, t);
+                        }
+                    case _:
+                }
             }
             for (it in t.interfaces) iter(it.t.get());
         }
