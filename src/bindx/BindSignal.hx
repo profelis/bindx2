@@ -102,8 +102,12 @@ class BindSignalProvider implements IBindingSignalProvider {
                 var data:Dynamic<String> = std.Reflect.field(meta, m);
                 if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
                     var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field($expr, m);
-                    if (signal != null)
+                    if (signal != null) {
                         signal.removeAll();
+                        var args:Array<Dynamic> = Reflect.field(data, $v { BIND_SIGNAL_META } );
+                        var lazy:Bool = args[0];
+                        if (lazy) Reflect.setField($expr, m, null);
+                    }
                 }
             }
         }
@@ -120,7 +124,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalPrivateName,
                 kind: FVar(type, null),
                 pos: field.pos,
-                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ],
+                meta: [ { name:BIND_SIGNAL_META, pos:field.pos, params: [macro true] } ],
                 access: [APrivate]
             });
 
@@ -154,7 +158,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 kind: FProp("default", "null", type, builder),
                 pos: field.pos,
                 access: [APrivate],
-                meta: [ { name:BIND_SIGNAL_META, pos:field.pos } ]
+                meta: [ { name:BIND_SIGNAL_META, pos:field.pos, params: [macro false] } ]
             });
         }
     }
