@@ -87,11 +87,9 @@ class BindExt {
             var isChain;
             expr = unwrapFormatedString(expr);
             var e = expr;
-            var ecall = false;
             do switch (e.expr) {
                 case EField(le, _) | ECall(le, _): 
                     isChain = true;
-                    ecall = e.expr.match(ECall(_, _));
                     e = le;
                 case _:
                     isChain = false;
@@ -116,6 +114,14 @@ class BindExt {
                 if (c != null) {
                     var key = c.expr.toString();
                     if (!binded.exists(key)) {
+                        var ecall = switch (c.expr.expr) {
+                            case EField(e, field):
+                                var type = Context.typeof(e);
+                                var classRef = type.getClass();
+                                var field = classRef.findField(field);
+                                field.kind.match(FMethod(_));
+                            case _: false;
+                        }
                         var prebind = macro var $zeroListener = ${ecall ? methodListenerNameExpr : fieldListenerNameExpr};
                         binded.set(key, {prebind:prebind, c:c});
                     }
@@ -168,20 +174,31 @@ class BindExt {
         
         var result = [macro init = false, macro $i { methodListenerName } (), (macro var res = function ():Void $b { chain.unbind }), macro return res ];
         
-        return macro (function ($zeroListener):Void->Void
+        var res = macro (function ($zeroListener):Void->Void
             $b { preInit.concat(chain.init).concat(postInit).concat(chain.bind).concat(result) }
         )($listener);
+        
+        return res;
     }
     
     static function checkFields(expr:Expr):Array<FieldExpr> {
         var first = Bind.checkField(expr);
+        var firstParams;
+        if (first.field == null) {
+            switch (expr.expr) {
+                case ECall(e, params):
+                    first = Bind.checkField(e);
+                    firstParams = params;
+                case _:
+            }
+        }
         if (first.field == null) {
             if (first.error != null) throw first.error;
             else throw new FatalError('${expr.toString()} is not bindable.', expr.pos);
         }
         
         var prevField = {e:first.e, field:first.field, error:null};
-        var fields:Array<FieldExpr> = [ { field:first.field, bindable:first.error == null, e:first.e } ];
+        var fields:Array<FieldExpr> = [ { field:first.field, bindable:first.error == null, e:first.e, params:firstParams } ];
         
         var end = false;
         while (!end) {
