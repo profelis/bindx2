@@ -21,6 +21,6 @@ class Tests extends BuddySuite {
 
         runner.run();
 
-        return runner.statusCode();
+        Sys.exit(runner.statusCode());
     }
 }
