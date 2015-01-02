@@ -92,10 +92,10 @@ class ChainBindTest extends BuddySuite {
                 BindExt.expr(b.c.c.f("tada"), function (f, t) {
                     t.should.not.be(null);
                 });
-                BindExt.expr(b.c.c, function (f, t) {
+                BindExt.chain(b.c.c, function (f, t) {
                     t.should.not.be(null);
                 });
-                BindExt.expr(b.c, function (f, t) {
+                BindExt.chain(b.c, function (f, t) {
                     t.should.not.be(null);
                 });
                 

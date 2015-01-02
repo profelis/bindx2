@@ -55,11 +55,12 @@ class BindExt {
     static inline function internalBindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
         var chain = null;
-        try { chain = warnPrepareChain(expr, macro $i{ zeroListener }); } catch (e:GenericError) e.contextError();
+        try { chain = warnPrepareChain(expr); } catch (e:GenericError) e.contextError();
         
-        return macro (function ($zeroListener):Void->Void
+        var res = macro (function ($zeroListener):Void->Void
             $b { chain.init.concat(chain.bind).concat([(macro var res = function ():Void $b { chain.unbind }), macro return res]) }
         )($listener);
+        return res;
     }
     
     static inline function unwrapFormatedString(expr:Expr):Expr {
@@ -107,7 +108,7 @@ class BindExt {
                 var zeroListener = listenerName(0, pre);
                 var c = null;
                 try { 
-                    c = warnPrepareChain(expr, macro $i { zeroListener }, pre, true); 
+                    c = warnPrepareChain(expr, pre, true); 
                 } catch (e:GenericError) {
                     Warn.w('${expr.toString()} is not bindable.', e.pos, WarnPriority.ALL);
                 }
@@ -223,7 +224,7 @@ class BindExt {
         return fields;
     }
     
-    static function warnPrepareChain(expr:Expr, listener:Expr, prefix = "", skipUnbindable = false):Chain {
+    static function warnPrepareChain(expr:Expr, prefix = "", skipUnbindable = false):Chain {
         var fields = checkFields(expr);
 
         if (fields.length == 0)
@@ -250,12 +251,12 @@ class BindExt {
         if (first != null)
             Warn.w('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos, WarnPriority.INFO);
         
-        return prepareChain(fields, macro listener, expr, prefix);
+        return prepareChain(fields, expr, prefix);
     }
     
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
-    static function prepareChain(fields:Array<FieldExpr>, expr:Expr, listener:Expr, prefix = ""):Chain {
+    static function prepareChain(fields:Array<FieldExpr>, expr:Expr, prefix = ""):Chain {
         var res:Chain = { init:[], bind:[], unbind:[], expr:null };
         
         var prevListenerName = listenerName(0, prefix);
@@ -307,7 +308,7 @@ class BindExt {
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
-                fieldListenerBody.unshift(macro var n:Null<$type> = $i{oldValue} = try $e catch (e:Dynamic) null );
+                fieldListenerBody.unshift(macro var n:Null < $type > = $i { oldValue } = try { $e; } catch (e:Dynamic) { null; } );
                 fieldListenerBody.unshift(macro var o:Null<$type> = $i{oldValue} );
                 
                 res.init.push(macro var $oldValue:Null<$type> = null);
