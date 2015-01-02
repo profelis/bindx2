@@ -308,7 +308,9 @@ class BindExt {
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {
-                fieldListenerBody.unshift(macro var n:Null < $type > = $i { oldValue } = try { $e; } catch (e:Dynamic) { null; } );
+                fieldListenerBody.unshift(macro $i { oldValue } = n);
+                fieldListenerBody.unshift(macro try { n = $e; } catch (e:Dynamic) { });
+                fieldListenerBody.unshift(macro var n:Null < $type > = null);
                 fieldListenerBody.unshift(macro var o:Null<$type> = $i{oldValue} );
                 
                 res.init.push(macro var $oldValue:Null<$type> = null);

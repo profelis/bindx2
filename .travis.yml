@@ -5,12 +5,15 @@ env:
   global:
     #- OS=mac # add this too to let the script know that the OS is a mac
     # - ARCH=i686 # add this to run in 32-bit mode. See availability at README
-    - HAXE_VER: 3.1.3
+    
       # SAUCE_ACCESS_KEY
     - secure: "YOUR_ENCRYPTED_SAUCE_ACCESS_KEY" # if you want to use SauceLabs
       # SAUCE_USERNAME
     - secure: "YOUR_ENCRYPTED_SAUCE_USERNAME" # if you want to use SauceLabs
   matrix:
+    - HAXE_VER: 3.1.3
+    - HAXE_VER: latest
+    
     - TARGET=neko 
       # optional: FILENAME
     - TARGET=interp
