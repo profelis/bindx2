@@ -153,7 +153,7 @@ class BindExt {
         
         var callListener = switch (type) {
             case macro : Void: macro if (!init) $i{zeroListener}();
-            case _: macro if (!init) { var v:Null<$type> = null; try { v = $expr; } catch (e:Dynamic) { }; $i{zeroListener}($i{zeroValue}, $i{zeroValue} = v); }; 
+            case _: macro if (!init) { var v:Null < $type > = null; try { v = $expr; } catch (e:Dynamic) { }; $i { zeroListener } ($i { zeroValue }, v); $i { zeroValue } = v; }; 
         }
 
         var preInit = [
