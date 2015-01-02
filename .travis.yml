@@ -5,14 +5,13 @@ env:
   global:
     #- OS=mac # add this too to let the script know that the OS is a mac
     # - ARCH=i686 # add this to run in 32-bit mode. See availability at README
-    - HAXE_VER=3.1.3
-    - HAXE_VER=latest
       # SAUCE_ACCESS_KEY
     - secure: "YOUR_ENCRYPTED_SAUCE_ACCESS_KEY" # if you want to use SauceLabs
       # SAUCE_USERNAME
     - secure: "YOUR_ENCRYPTED_SAUCE_USERNAME" # if you want to use SauceLabs
   matrix:
     - TARGET=neko 
+    - TARGET=neko HAXE_VER=3.1.3
       # optional: FILENAME
     - TARGET=interp
     - TARGET=macro
@@ -24,16 +23,21 @@ env:
       # optional: FILENAME
       # optional: SAUCE_BROWSERS: specify the .json file that specifies the SauceLabs browsers to test. Defaults to `.sauce-browsers.json`
     - TARGET=php
+    - TARGET=php HAXE_VER=3.1.3
       # optional: FILENAME
     - TARGET=cpp
+    - TARGET=cpp HAXE_VER=3.1.3
       # optional: FILENAME
     - TARGET=swf
+    - TARGET=swf HAXE_VER=3.1.3
       # optional: FILENAME
     # - TARGET=as3 
       # optional: FILENAME
     - TARGET=java
+    - TARGET=java HAXE_VER=3.1.3
       # optional: FILENAME
     - TARGET=cs
+    - TARGET=cs HAXE_VER=3.1.3
       # optional: FILENAME
 #    - TARGET=swf8
       # optional: FILENAME
