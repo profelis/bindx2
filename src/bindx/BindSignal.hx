@@ -99,7 +99,7 @@ class BindSignalProvider implements IBindingSignalProvider {
         return macro {
             var meta = haxe.rtti.Meta.getFields(std.Type.getClass($expr));
             if (meta != null) for (m in std.Reflect.fields(meta)) {
-                var data:Dynamic<String> = std.Reflect.field(meta, m);
+                var data = std.Reflect.field(meta, m);
                 if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
                     var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field($expr, m);
                     if (signal != null) {

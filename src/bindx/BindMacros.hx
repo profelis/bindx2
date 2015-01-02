@@ -26,7 +26,7 @@ class BindMacros {
      */
     static public inline var FORCE = "force";
     
-    static public inline var BINDABLE_FIELDS = "bindableFields";
+    static public inline var BINDABLE_FIELDS = ":bindableFields";
 
 	static var processed:Array<String> = [];
 
@@ -55,7 +55,7 @@ class BindMacros {
             var a = [];
             for (f in fields) {
                 for (m in f.meta) if (m.name == MetaUtils.BINDABLE_META) {
-                    a.push(f.name);
+                    a.push(macro $v { f.name } );
                     if (m.params.length > 0)
                         Context.warning('Interface doesn\'t support @:bindable meta params', m.pos);
                 }
@@ -63,7 +63,7 @@ class BindMacros {
             var classMeta = classType.meta;
             if (classMeta.has(BINDABLE_FIELDS))
                 classMeta.remove(BINDABLE_FIELDS);
-            classMeta.add(BINDABLE_FIELDS, [macro $v { a } ], classType.pos);
+            classMeta.add(BINDABLE_FIELDS, a, classType.pos);
             return fields;
         }
         
@@ -94,16 +94,9 @@ class BindMacros {
         function iter(t:ClassType) {
             var meta = t.meta.get();
             var m = meta.find(function (it) return it.name == BINDABLE_FIELDS);
-            if (m != null && m.params.length > 0) {
-                var a = m.params[0];
-                switch a.expr {
-                    case EArrayDecl(values):
-                        for (v in values) {
-                            var value = switch v.expr { case EConst(CString(s)): s; case _: null; };
-                            interfaceFields.set(value, t);
-                        }
-                    case _:
-                }
+            if (m != null) for (a in m.params) {
+                var value = switch a.expr { case EConst(CString(s)): s; case _: null; };
+                interfaceFields.set(value, t);
             }
             for (it in t.interfaces) iter(it.t.get());
         }
