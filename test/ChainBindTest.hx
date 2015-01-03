@@ -89,16 +89,6 @@ class ChainBindTest extends BuddySuite {
                 b.c.c.f("tada").d = val;
                 b2.c.c.f("tada").d = val;
                 
-                BindExt.expr(b.c.c.f("tada"), function (f, t) {
-                    t.should.not.be(null);
-                });
-                BindExt.chain(b.c.c, function (f, t) {
-                    t.should.not.be(null);
-                });
-                BindExt.chain(b.c, function (f, t) {
-                    t.should.not.be(null);
-                });
-                
                 var unbind = BindExt.chain(b.c.c.f("tada").d, function (f:String, t:String) {
                     f.should.be(from);
                     from = val;
