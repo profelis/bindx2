@@ -5,8 +5,8 @@
     "tags": ["bind", "binding", "bindings", "cross"],
     "description": "Powerful and fast macro-based data binding engine inspired by Flex Bindings with easy-to-use syntax.",
     "classPath": "src",
-    "version": "2.1.0",
-    "releasenote": "interface fields support @:bindable meta",
+    "version": "2.2.0",
+    "releasenote": "interface full support (inheritance). cpp, java and cs full support (3.1.3 and night build)",
     "contributors": [
         "deep"
     ]
