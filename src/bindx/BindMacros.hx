@@ -98,10 +98,12 @@ class BindMacros {
         
         function iter(t:ClassType) {
             var meta = t.meta.get();
-            var m = meta.find(function (it) return it.name == BINDABLE_FIELDS);
-            if (m != null) for (a in m.params) {
-                var value = switch a.expr { case EConst(CString(s)): s; case _: null; };
-                interfaceFields.set(value, t);
+            for (m in meta) if (m.name == BINDABLE_FIELDS) {
+                for (a in m.params) {
+                    var value = switch a.expr { case EConst(CString(s)): s; case _: null; };
+                    interfaceFields.set(value, t);
+                }
+                break;
             }
             for (it in t.interfaces) iter(it.t.get());
         }
@@ -163,13 +165,13 @@ class BindMacros {
                         case _:
                     }
                 }
-    			res.push(field);
+                res.push(field);
 
-    		case FFun(f):
+            case FFun(f):
                 if (inlineSetter != null)
                     Warn.w('methods doesn\'t support \'$INLINE_SETTER\'', inlineSetter.pos, WarnPriority.INFO);
-    			res.push(field);
-    	}
+                res.push(field);
+        }
     }
 
     static var patchField:Field;
@@ -190,8 +192,8 @@ class BindMacros {
     }
 
     static inline function injectBindableMeta(fields:Array<Field>, meta:MetadataEntry):Void {
-    	for (f in fields) {
-    		if (f.hasBindableMeta()) continue;
+        for (f in fields) {
+            if (f.hasBindableMeta()) continue;
             if (f.access.exists(function (it) return it.equals(APrivate))) continue;
 
             var forceParam = meta.findParam(FORCE);
@@ -200,29 +202,36 @@ class BindMacros {
                     case FFun(_):
                     case _: f.meta.push({name:MetaUtils.BINDABLE_META, pos:f.pos, params:meta.params});
                 }
-    	}
+        }
     }
 
     static function isFieldBindable(field:Field, fields:Array<Field>, force = false):Bool {
-		if (field.name == "new") return false;
+        if (field.name == "new") return false;
 
-		if (field.access.exists(function (it) return it.equals(AMacro) || it.equals(ADynamic) || it.equals(AStatic))) return false;
+        for (a in field.access)
+            if (a.equals(AMacro) || a.equals(ADynamic) || a.equals(AStatic))
+                return false;
 
-		if (field.name.startsWith("set_") || field.name.startsWith("get_")) {
-			var propName = field.name.substr(4);
-			if (fields.exists(function(it) return it.name == propName)) return false;
-		}
+        if (field.name.startsWith("set_") || field.name.startsWith("get_")) {
+            var propName = field.name.substr(4);
+            for (f in fields) if (f.name == propName) {
+                switch (f.kind) {
+                    case FVar(_, _): return false;
+                    case _:
+                }
+            }
+        }
 
         if (!force) {
             var meta = field.bindableMeta();
             var forceParam = meta != null ? meta.findParam(FORCE) : null;
             force = forceParam.isNotNullAndTrue();
         }
-        if (force)
-            return switch (field.kind) {
-                case FProp("never", _, _, _): false;
-                case _: true;
-            }
+        
+        if (force) return switch (field.kind) {
+            case FProp("never", _, _, _): false;
+            case _: true;
+        }
 
         return switch (field.kind) {
             case FProp("never", _, _, _) | FProp(_, "never", _, _) | FProp(_, "dynamic", _, _) | FProp(_, "null", _, _): false;
