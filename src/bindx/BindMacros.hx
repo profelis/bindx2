@@ -212,11 +212,13 @@ class BindMacros {
             if (a.equals(AMacro) || a.equals(ADynamic) || a.equals(AStatic))
                 return false;
 
-        if (field.name.startsWith("set_") || field.name.startsWith("get_")) {
-            var propName = field.name.substr(4);
+        var fn = field.name;
+        if (fn.startsWith("set_") || fn.startsWith("get_")) {
+            var propName = fn.substr(4);
             for (f in fields) if (f.name == propName) {
                 switch (f.kind) {
-                    case FVar(_, _): return false;
+                    case FProp(get, set, _, _) if (fn == get || fn == set):
+                        return false;
                     case _:
                 }
             }
