@@ -160,7 +160,13 @@ class BindExt {
         
         var callListener = switch (type) {
             case macro : Void: macro if (!init) $i{zeroListener}();
-            case _: macro if (!init) { var v:Null < $type > = null; try { v = $expr; } catch (e:Dynamic) { }; $i { zeroListener } ($i { zeroValue }, v); $i { zeroValue } = v; }; 
+            case _: 
+                macro if (!init) {
+                    var v:Null < $type > = null;
+                    try { v = $expr; } catch (e:Dynamic) { };
+                    $i { zeroListener } ($i { zeroValue }, v);
+                    $i { zeroValue } = v;
+                }; 
         }
 
         var preInit = [
@@ -173,7 +179,12 @@ class BindExt {
             macro function $methodListenerName() $callListener
         ];
         
-        var result = [macro init = false, macro $i { methodListenerName } (), (macro var res = function ():Void $b { chain.unbind }), macro return res ];
+        var result = [
+            macro init = false,
+            macro $i { methodListenerName } (),
+            (macro var res = function ():Void $b { chain.unbind } ),
+            macro return res
+        ];
         
         var res = macro (function ($zeroListener):Void->Void
             $b { preInit.concat(chain.init).concat(postInit).concat(chain.bind).concat(result) }
@@ -201,8 +212,8 @@ class BindExt {
         var prevField = {e:first.e, field:first.field, error:null};
         var fields:Array<FieldExpr> = [ { field:first.field, bindable:first.error == null, e:first.e, params:firstParams } ];
         
-        var end = false;
-        while (!end) {
+        var end;
+        do {
             end = true;
             var field = Bind.checkField(prevField.e);
             if (field.field != null) {
@@ -220,7 +231,7 @@ class BindExt {
                 throw new FatalError('${prevField.e.toString()} is not bindable.', prevField.e.pos);
             }
             prevField = field;
-        }
+        } while (!end);
         return fields;
     }
     
@@ -246,11 +257,10 @@ class BindExt {
         var bindableNum = fields.fold(function (it, n) return n += it.bindable ? 1 : 0, 0);
         if (bindableNum == 0) {
             throw new GenericError('${expr.toString()} is not bindable.', expr.pos);
-            return null;
         }
-        if (first != null)
+        if (first != null) {
             Warn.w('${expr.toString()} is not full bindable. Can bind only "${first.e.toString()}".', expr.pos, WarnPriority.INFO);
-        
+        }
         return prepareChain(fields, expr, prefix);
     }
     
@@ -304,7 +314,8 @@ class BindExt {
                 fieldListenerBody.push(macro if (n != null)
                     $ { BindMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
-            var callPrev = macro $prevListenerNameExpr($a { prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null] } );
+            var callPrevArgs = prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null];
+            var callPrev = macro $prevListenerNameExpr($a { callPrevArgs } );
             fieldListenerBody.push(callPrev);
         
             if (field.params != null) {

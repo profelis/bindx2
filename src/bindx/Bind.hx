@@ -88,7 +88,7 @@ class Bind {
 					error = new GenericError('\'${e.toString()}\' must be bindx.IBindable', e.pos);
 				}
 				
-				var field:ClassField = classType.findField(field, null);
+				var field = classType.findField(field, null);
 				if (field == null) {
 					throw new FatalError('\'${e.toString()}.${field.name}\' expected', field.pos);
 					return null;
