@@ -75,9 +75,9 @@ BindExt.exprTo(expr, toExpr) | Bind any valid `expr` to `toExpr`. (NB: for the f
 
 ## `bindx.IBindable` and @:bindable meta:
 
-Bindx will process special meta - `@:bindable`. If `@:bindable` is set for the whole class then it will be inherited by all public properties which don't have this meta already. `@:bindable` only processed for classes which implement `bindx.IBindable`.
+Bindx will process special meta - `@:bindable`. If `@:bindable` is set for the whole class then it will be inherited by all public properties which don't have this meta already. `@:bindable` only processed for classes and interfaces which implement `bindx.IBindable`.
 
-Accepts additional arguments: `@:bindable(paramName1 = value, paramName2 = value ...)`
+Accepts additional arguments: `@:bindable(paramName1 = value, paramName2 = value ...)`, short notation `paramName` equals with `paramName = true`
 
 Parameter    | Default value | Description
 ------------ | ------------- | -------------
