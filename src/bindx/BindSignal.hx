@@ -7,7 +7,6 @@ import bindx.BindSignal.Signal;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
-import haxe.rtti.Meta;
 
 using bindx.MetaUtils;
 using haxe.macro.Tools;
@@ -26,8 +25,6 @@ class BindSignalProvider implements IBindingSignalProvider {
      */
     static inline var INLINE_SIGNAL_GETTER = "inlineSignalGetter";
     
-    static inline var BIND_SIGNAL_META = "BindSignal";
-
     public function new() {}
 
     @:extern static inline function signalName(fieldName:String):String return fieldName + SIGNAL_POSTFIX;
@@ -75,7 +72,7 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     public function getClassFieldUnbindExpr(expr:Expr, field:ClassField, listener:Expr):Expr {
         var signalName = signalName(field.name);
-        return if (!isNull(listener))
+        return if (!listener.isNullOrEmpty())
             macro @:privateAccess $expr.$signalName.remove($listener);
         else
             macro @:privateAccess $expr.$signalName.removeAll();
@@ -84,9 +81,9 @@ class BindSignalProvider implements IBindingSignalProvider {
     public function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr {
         var args = switch (field.kind) {
             case FMethod(_): 
-                if (!isNull(oldValue))
+                if (!oldValue.isNullOrEmpty())
                     Context.error("method notify doesn't require oldValue", oldValue.pos);
-                if (!isNull(newValue))
+                if (!newValue.isNullOrEmpty())
                     Context.error("method notify doesn't require newValue", newValue.pos);
                 [];
             case FVar(_, _):
@@ -96,21 +93,7 @@ class BindSignalProvider implements IBindingSignalProvider {
     }
     
     public function getUnbindAllExpr(expr:ExprOf<IBindable>, type:Type):Expr {
-        return macro {
-            var meta = haxe.rtti.Meta.getFields(std.Type.getClass($expr));
-            if (meta != null) for (m in std.Reflect.fields(meta)) {
-                var data = std.Reflect.field(meta, m);
-                if (std.Reflect.hasField(data, $v{BIND_SIGNAL_META})) {
-                    var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field($expr, m);
-                    if (signal != null) {
-                        signal.removeAll();
-                        var args:Array<Dynamic> = Reflect.field(data, $v { BIND_SIGNAL_META } );
-                        var lazy:Bool = args[0];
-                        if (lazy) Reflect.setField($expr, m, null);
-                    }
-                }
-            }
-        }
+        return macro bindx.BindSignal.SignalTools.unbindAll($expr);
     }
 
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>):Void {
@@ -124,7 +107,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalPrivateName,
                 kind: FVar(type, null),
                 pos: field.pos,
-                meta: [ { name:BIND_SIGNAL_META, pos:field.pos, params: [macro true] } ],
+                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro true] } ],
                 access: [APrivate]
             });
 
@@ -158,7 +141,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 kind: FProp("default", "null", type, builder),
                 pos: field.pos,
                 access: [APrivate],
-                meta: [ { name:BIND_SIGNAL_META, pos:field.pos, params: [macro false] } ]
+                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro false] } ]
             });
         }
     }
@@ -179,10 +162,6 @@ class BindSignalProvider implements IBindingSignalProvider {
 
     @:extern inline function hasLazy(meta:MetadataEntry):Bool {
         return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
-    }
-    
-    @:extern inline function isNull(expr:Expr):Bool {
-        return expr == null || expr.expr.match(EConst(CIdent("null")));
     }
 }
 
@@ -258,6 +237,26 @@ class Signal<T> {
         if (lock > 0) {
             listeners = listeners.copy();
             lock = 0;
+        }
+    }
+}
+
+class SignalTools {
+    static public inline var BIND_SIGNAL_META = "BindSignal";
+    
+    static public function unbindAll(bindable:bindx.IBindable):Void {
+        var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
+        if (meta != null) for (m in std.Reflect.fields(meta)) {
+            var data = std.Reflect.field(meta, m);
+            if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
+                var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field(bindable, m);
+                if (signal != null) {
+                    signal.removeAll();
+                    var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
+                    var lazy:Bool = args[0];
+                    if (lazy) std.Reflect.setField(bindable, m, null);
+                }
+            }
         }
     }
 }

@@ -22,8 +22,7 @@ class MetaUtils {
                 case {expr:EConst(CIdent(s))}:
                     if (s == name) res = { expr:(macro true).expr , pos: p.pos };
                 case _:
-                    trace(p.expr);
-                    Context.warning('Bindable arguments syntax error. Supported syntax: (flag1=true, flag2=false)', p.pos);
+                    Context.warning('Bindable arguments syntax error. Supported syntax: (flag1=true, flag2=false, flag3)', p.pos);
             }
             if (res != null) break;
         }
@@ -71,6 +70,10 @@ class ExprMetaUtils {
 	static public inline function isFalse(expr:Expr):Bool
 		return expr.expr.match(EConst(CIdent("false")));
 
+    static public inline function isNullOrEmpty(expr:Expr):Bool {
+        return expr == null || expr.expr.match(EConst(CIdent("null")));
+    }
+    
 	static public inline function isNotNullAndTrue(expr:Expr):Bool
 		return expr != null && isTrue(expr);
 
