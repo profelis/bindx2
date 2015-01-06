@@ -40,7 +40,7 @@ class ForceTest extends BuddySuite {
     }
 }
 
-@:bindable(force=true)
+@:bindable(force)
 class BindableForce implements bindx.IBindable {
 
     public var str(default, never):String;

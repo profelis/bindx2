@@ -301,7 +301,7 @@ class Bindable1 implements bindx.IBindable {
 	@:bindable(lazySignal=false)
 	public var str2:String;
 
-	@:bindable(lazySignal=true)
+	@:bindable(lazySignal)
 	public function bind() {
 	}
 	

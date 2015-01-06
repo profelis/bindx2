@@ -18,8 +18,11 @@ class MetaUtils {
         if (meta.params != null) for (p in meta.params) {
             switch (p.expr) {
                 case EBinop(OpAssign, e1, e2):
-                    if (e1.toString() == name) res = {expr:e2.expr, pos:p.pos};
+                    if (e1.toString() == name) res = { expr:e2.expr, pos:p.pos };
+                case EConst(CIdent(s)):
+                    if (s == name) res = { expr:(macro true).expr , pos: p.pos };
                 case _:
+                    trace(p.expr);
                     Context.warning('Bindable arguments syntax error. Supported syntax: (flag1=true, flag2=false)', p.pos);
             }
             if (res != null) break;
