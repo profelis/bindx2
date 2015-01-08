@@ -1,5 +1,5 @@
 package bindx;
 
-@:autoBuild(bindx.BindMacros.buildIBindable())
+@:autoBuild(bindx.macro.BindableMacros.buildIBindable())
 interface IBindable {
 }

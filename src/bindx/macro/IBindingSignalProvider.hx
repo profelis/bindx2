@@ -1,6 +1,4 @@
-package bindx;
-
-#if macro
+package bindx.macro;
 
 import haxe.macro.Expr;
 import haxe.macro.Type;
@@ -16,4 +14,3 @@ interface IBindingSignalProvider {
     function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr;
     function getUnbindAllExpr(expr:ExprOf<IBindable>, type:Type):Expr;
 }
-#end
