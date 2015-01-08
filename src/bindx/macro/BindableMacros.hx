@@ -1,19 +1,17 @@
-package bindx;
+package bindx.macro;
 
-import bindx.GenericError;
+import bindx.macro.GenericError;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
-import haxe.macro.TypeTools;
 
 using haxe.macro.Tools;
 using Lambda;
 using StringTools;
-using bindx.MetaUtils;
-using haxe.macro.Tools;
+using bindx.macro.MetaUtils;
 
-class BindMacros {
-    #if macro
+class BindableMacros {
+
     static inline var OLD_VALUE = "__oldValue__";
     static inline var NEW_VALUE = "__newValue__";
 
@@ -48,7 +46,7 @@ class BindMacros {
         });
         
         if (bindingSignalProvider == null) {
-            bindingSignalProvider = new bindx.BindSignal.BindSignalProvider();
+            bindingSignalProvider = new bindx.macro.BindSignalProvider();
         }
         
         var fields = Context.getBuildFields();
@@ -240,5 +238,4 @@ class BindMacros {
             case _: true;
         }
     }
-    #end
 }

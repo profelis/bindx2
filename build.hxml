@@ -2,5 +2,5 @@
 -cp src
 -cp test
 -D dump=pretty
---interp
+-neko bin/test.n
 -lib buddy

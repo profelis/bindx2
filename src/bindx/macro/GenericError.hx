@@ -1,6 +1,4 @@
-package bindx;
-
-#if macro
+package bindx.macro;
 
 import haxe.macro.Context;
 import haxe.macro.Expr.Position;
@@ -51,4 +49,3 @@ class GenericError {
         Context.fatalError(message, pos);
     }
 }
-#end
