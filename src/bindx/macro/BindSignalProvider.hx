@@ -6,7 +6,7 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 import bindx.BindSignal;
 
-using bindx.macro.MetaUtils;
+using bindx.macro.MacroUtils;
 using haxe.macro.Tools;
 using Lambda;
 

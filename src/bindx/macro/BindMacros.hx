@@ -8,30 +8,30 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
-using bindx.macro.MetaUtils;
+using bindx.macro.MacroUtils;
 using Lambda;
 
 @:access(bindx.macro.BindableMacros)
 class BindMacros {
 
-    static inline function internalBind(field:Expr, listener:Expr, doBind:Bool):Expr {
+    static inline function bind(field:Expr, listener:Expr, doBind:Bool):Expr {
         var fieldData = warnCheckField(field);
         return if (doBind) BindableMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
         else BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
     }
 
-    static inline function internalBindTo(field:Expr, target:Expr):Expr {
+    static inline function bindTo(field:Expr, target:Expr):Expr {
         var fieldData = warnCheckField(field);
         return BindableMacros.bindingSignalProvider.getClassFieldBindToExpr(fieldData.e, fieldData.field, target);
     }
 
-    static inline function internalNotify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
+    static inline function notify(field:Expr, ?oldValue:Expr, ?newValue:Expr):Expr {
         var fieldData = warnCheckField(field);
         return BindableMacros.bindingSignalProvider.getClassFieldChangedExpr(fieldData.e, fieldData.field, oldValue, newValue);
     }
 
-    static inline function internalUnbindAll(object:ExprOf<IBindable>):Expr {
-        var type = Context.typeof(object).follow();
+    static inline function unbindAll(object:ExprOf<IBindable>):Expr {
+        var type = Context.typeof(object);
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
         }
