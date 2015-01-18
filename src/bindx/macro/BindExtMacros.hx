@@ -87,7 +87,7 @@ class BindxExtMacro {
                     if (!binded.exists(key)) {
                         var ecall = switch (c.expr.expr) {
                             case EField(e, field):
-                                var type = Context.typeof(e);
+                                var type = e.deepTypeof();
                                 var classRef = type.getClass();
                                 var field = classRef.findField(field);
                                 field.kind.match(FMethod(_));
@@ -237,6 +237,7 @@ class BindxExtMacro {
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
     static function prepareChain(fields:Array<FieldExpr>, expr:Expr, prefix = ""):Chain {
+        var bsp = BindableMacros.bindingSignalProvider;
         var res:Chain = { init:[], bind:[], unbind:[], expr:null };
         
         var prevListenerName = listenerName(0, prefix);
@@ -274,7 +275,7 @@ class BindxExtMacro {
             }
 
             if (prev.bindable) {
-                var unbind = BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
+                var unbind = bsp.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
                 
                 res.bind.push(macro var $value:Null<$type> = null );
                 res.unbind.push(macro if ($valueExpr != null) { $unbind; $valueExpr = null; } );
@@ -282,7 +283,7 @@ class BindxExtMacro {
                 fieldListenerBody.push(macro if ($valueExpr != null) $unbind );
                 fieldListenerBody.push(macro $valueExpr = n );
                 fieldListenerBody.push(macro if (n != null)
-                    $ { BindableMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
+                    $ { bsp.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
             var callPrevArgs = prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null];
             var callPrev = macro $prevListenerNameExpr($a { callPrevArgs } );
@@ -300,7 +301,7 @@ class BindxExtMacro {
             } else {
                 if (prev.bindable) {
                     fieldListenerBody.unshift(macro if (o != null) 
-                        ${BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
+                        ${bsp.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
                     );
                 }
                 fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void $b { fieldListenerBody };
@@ -319,8 +320,8 @@ class BindxExtMacro {
         if (zeroName != "this")
             res.init.unshift(macro var $zeroName = $i{zeroName});
         
-        res.bind.push(BindableMacros.bindingSignalProvider.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
-        res.unbind.push(BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
+        res.bind.push(bsp.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
+        res.unbind.push(bsp.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
 
         if (zeroListener.f.params != null) {
             res.bind.push(macro ${zeroListener.l}());

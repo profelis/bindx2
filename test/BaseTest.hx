@@ -288,10 +288,21 @@ class BaseTest extends BuddySuite {
 				
 				true.should.be(true);
 			});
+			
+			it("bindx should resolve typedefs", {
+				var a:TypeBindable1 = new TypeBindable1();
+				Bind.bind(a.str, function (_, _) {
+					callNum ++;
+				});
+				
+				a.str = "123";
+				callNum.should.be(1);
+			});
 		});
 	}
 }
 
+typedef TypeBindable1 = Bindable1;
 
 class Bindable1 implements bindx.IBindable {
 

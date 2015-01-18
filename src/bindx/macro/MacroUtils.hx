@@ -81,7 +81,11 @@ class ExprUtils {
 		return expr == null || isTrue(expr);
         
     static public inline function getComplexType(expr:Expr):ComplexType {
-        return Context.typeof(expr).toComplexType();
+        return deepTypeof(expr).toComplexType();
+    }
+    
+    static public inline function deepTypeof(expr:Expr):haxe.macro.Type {
+        return Context.typeof(expr).follow();
     }
 }
 #end

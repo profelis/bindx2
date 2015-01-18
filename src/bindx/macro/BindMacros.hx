@@ -16,8 +16,9 @@ class BindMacros {
 
     static inline function bind(field:Expr, listener:Expr, doBind:Bool):Expr {
         var fieldData = warnCheckField(field);
-        return if (doBind) BindableMacros.bindingSignalProvider.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
-        else BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
+        var bsp = BindableMacros.bindingSignalProvider;
+        return if (doBind) bsp.getClassFieldBindExpr(fieldData.e, fieldData.field, listener);
+        else bsp.getClassFieldUnbindExpr(fieldData.e, fieldData.field, listener);
     }
 
     static inline function bindTo(field:Expr, target:Expr):Expr {
@@ -31,7 +32,7 @@ class BindMacros {
     }
 
     static inline function unbindAll(object:ExprOf<IBindable>):Expr {
-        var type = Context.typeof(object);
+        var type = object.deepTypeof();
         if (!isBindable(type.getClass())) {
             Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
         }
@@ -55,7 +56,7 @@ class BindMacros {
         var error:GenericError = null;
         switch (f.expr) {
             case EField(e, field):
-                var type = Context.typeof(e);
+                var type = e.deepTypeof();
                 var classType = switch (type) { case TInst(c, _): c.get(); case _: null; };
                 if (classType == null) {
                     error = new FatalError('Type \'${e.toString()}\' is unknown', e.pos);
