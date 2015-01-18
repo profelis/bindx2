@@ -298,8 +298,26 @@ class BaseTest extends BuddySuite {
 				a.str = "123";
 				callNum.should.be(1);
 			});
+			
+			it("bindx should resolve parametric types", {
+				var b = new GenericBindable<TypeBindable1>();
+				b.a = new TypeBindable1();
+				Bind.bind(b.a.str, function (_, _) {
+					callNum ++;
+				});
+				
+				b.a.str = "123";
+				callNum.should.be(1);
+			});
 		});
 	}
+}
+
+//@:generic
+class GenericBindable<A> {
+	public var a:A;
+	
+	public function new() {}
 }
 
 typedef TypeBindable1 = Bindable1;
