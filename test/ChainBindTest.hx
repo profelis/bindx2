@@ -11,7 +11,7 @@ class ChainBindTest extends BuddySuite {
     
     public function new() {
         
-        describe("Using BindExt.chain", {
+        describe("Using BindExt.chain", function () {
             
             var from:String;
             var val:String;
@@ -19,7 +19,7 @@ class ChainBindTest extends BuddySuite {
             var callNum:Int;
             var target:{a:String};
             
-            before({
+            before(function () {
                 from = null;
                 val = "a";
                 b = new BindableChain(4);
@@ -27,7 +27,7 @@ class ChainBindTest extends BuddySuite {
                 callNum = 0;
             });
             
-            it("BindExt.chain should bind chain changes (unset links)", {
+            it("BindExt.chain should bind chain changes (unset links)", function () {
                 b.c.c.d = val;
                 
                 var listener = function (f:String, t:String) {
@@ -61,7 +61,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(5);
             });
             
-            it("BindExt.chain should bind chain changes (null links)", {
+            it("BindExt.chain should bind chain changes (null links)", function () {
                 b.c = null;
                 val = null;
                 
@@ -84,7 +84,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(3);
             });
             
-            it("BindExt.chain should bind chain changes (0 gap)", {
+            it("BindExt.chain should bind chain changes (0 gap)", function () {
                 var b2 = new BindableChain(4);
                 b.c.c.f("tada").d = val;
                 b2.c.c.f("tada").d = val;
@@ -121,7 +121,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(4);
             });
             
-            it("BindExt.chain should bind chain changes (1 gap)", {
+            it("BindExt.chain should bind chain changes (1 gap)", function () {
                 b.c.nc.c.f("tada").d = "a";
                 var unbind = BindExt.chain(b.c.nc.c.f("tada").d, function (f:String, t:String) {
                     f.should.be(from);
@@ -166,7 +166,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(3);
             });
             
-            it("BindExt.chain should bind chain changes (double gap)", {
+            it("BindExt.chain should bind chain changes (double gap)", function () {
                 b.c.nc.nc.d = "a";
                 
                 BindExt.chain(b.c.nc.nc.d, function (f, t:String) {
@@ -205,7 +205,7 @@ class ChainBindTest extends BuddySuite {
                 callNum.should.be(2);
             });
             
-            it("BindExt.chain should bind default fields", {
+            it("BindExt.chain should bind default fields", function () {
                 b.d = val = "a";
                 
                 var unbind = BindExt.chain(b.d, function (f:String, t:String) {

@@ -10,17 +10,17 @@ class ForceTest extends BuddySuite {
     
     public function new() {
         
-        describe("Using @:bindable(force=true)", {
+        describe("Using @:bindable(force=true)", function () {
             
             var b:BindableForce;
             var callNum:Int;
             
-            before({
+            before(function () {
                 b = new BindableForce();
                 callNum = 0;
             });
             
-            it("bindx should correct work with 'force' fields", {
+            it("bindx should correct work with 'force' fields", function () {
                 Bind.bind(b.str, function (_, _) callNum++);
                 Bind.bind(b.str2, function (_, _) callNum++);
                 Bind.bind(b.str3, function (_, _) callNum++);

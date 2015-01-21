@@ -10,18 +10,18 @@ class InheritanceTest extends BuddySuite {
 	public function new() {
 		super();
 
-        describe("Using classes inheritance", {
+        describe("Using classes inheritance", function () {
             var b:BindableChild;
             var bp:BindableParent;
             var callNum:Int;
             
-            before({
+            before(function () {
                 b = new BindableChild();
                 bp = new BindableParent();
                 callNum = 0;
             });
             
-            it("bindx should support class/interface inheritance", {
+            it("bindx should support class/interface inheritance", function () {
                 b.i = 1;
                 b.s = "a";
                 Bind.bind(b.i, function (_, _) callNum++);
