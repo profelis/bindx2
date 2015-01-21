@@ -1,7 +1,6 @@
 package bindx;
 
 import haxe.macro.Expr;
-import haxe.macro.Context;
 import bindx.macro.BindExtMacros;
 
 using haxe.macro.Tools;

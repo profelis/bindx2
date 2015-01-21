@@ -113,7 +113,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalName,
                 kind: FProp("get", "never", type, null),
                 pos: field.pos,
-                access: [APrivate],
+                access: [APrivate]
             });
 
             var getter = macro function foo() {
