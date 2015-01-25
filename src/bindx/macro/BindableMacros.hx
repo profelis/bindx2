@@ -191,15 +191,15 @@ class BindableMacros {
 
     static inline function injectBindableMeta(fields:Array<Field>, meta:MetadataEntry):Void {
         for (f in fields) {
-            if (f.hasBindableMeta()) continue;
-            if (f.access.exists(function (it) return it.equals(APrivate))) continue;
+            if (f.access.indexOf(APrivate) > -1 || f.hasBindableMeta()) continue;
 
             var forceParam = meta.findParam(FORCE);
-            if (isFieldBindable(f, fields, forceParam.isNotNullAndTrue()))
+            if (isFieldBindable(f, fields, forceParam.isNotNullAndTrue())) {
                 switch (f.kind) {
                     case FFun(_):
                     case _: f.meta.push({name:MetaUtils.BINDABLE_META, pos:f.pos, params:meta.params});
                 }
+            }
         }
     }
 

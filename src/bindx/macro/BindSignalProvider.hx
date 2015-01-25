@@ -8,7 +8,6 @@ import bindx.BindSignal;
 
 using bindx.macro.MacroUtils;
 using haxe.macro.Tools;
-using Lambda;
 
 class BindSignalProvider implements IBindingSignalProvider {
 

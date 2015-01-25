@@ -9,7 +9,6 @@ import haxe.macro.Context;
 
 using haxe.macro.Tools;
 using bindx.macro.MacroUtils;
-using Lambda;
 
 @:access(bindx.macro.BindableMacros)
 class BindMacros {

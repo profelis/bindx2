@@ -6,7 +6,6 @@ import haxe.macro.Expr;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
-using Lambda;
 
 class MetaUtils {
 
