@@ -11,17 +11,17 @@ class BaseTest extends BuddySuite {
 	public function new() {
 		super();
 	
-		describe("Using base functionality", {
+		describe("Using base functionality", function () {
 			
 			var b:Bindable1;
 			var callNum:Int;
-			
-			before({
+
+			before(function () {
 				b = new Bindable1();
 				callNum = 0;
 			});
 			
-			it("bindx should bind/unbind fields (lazySignal=true)", {
+			it("bindx should bind/unbind fields (lazySignal=true)", function () {
 				var strFrom = b.str = "a";
 				var callNum2 = 0;
 				
@@ -51,7 +51,7 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind fields (lazySignal=false)", {
+			it("bindx should bind/unbind fields (lazySignal=false)", function () {
 				var strFrom = b.str2 = "a";
 				var callNum2 = 0;
 				
@@ -81,7 +81,7 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind 'null' values (lazySignal=true)", {
+			it("bindx should bind/unbind 'null' values (lazySignal=true)", function () {
 				var strFrom = b.str = null;
 				var callNum2 = 0;
 				var listener = function (from:String, to:String) {
@@ -109,7 +109,7 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind 'null' values (lazySignal=false)", {
+			it("bindx should bind/unbind 'null' values (lazySignal=false)", function () {
 				var strFrom = b.str2 = null;
 				var callNum2 = 0;
 				var listener = function (from:String, to:String) {
@@ -137,7 +137,7 @@ class BaseTest extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind 2 objects (lazySignal=true)", {
+			it("bindx should bind 2 objects (lazySignal=true)", function() {
 				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
@@ -157,7 +157,7 @@ class BaseTest extends BuddySuite {
 				s.should.be(prev);
 			});
 			
-			it("bindx should bind 2 objects (lazySignal=false)", {
+			it("bindx should bind 2 objects (lazySignal=false)", function () {
 				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
@@ -176,7 +176,7 @@ class BaseTest extends BuddySuite {
 				s.should.be(prev);
 			});
 			
-			it("bindx should bind and notify methods (lazySignal=true)", {
+			it("bindx should bind and notify methods (lazySignal=true)", function () {
 				var listener = function () callNum++;
 				bind(b.bind, listener);
 				Bind.notify(b.bind);
@@ -189,7 +189,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should bind and notify methods (lazySignal=false)", {
+			it("bindx should bind and notify methods (lazySignal=false)", function () {
 				var listener = function () callNum++;
 				bind(b.bind2, listener);
 				Bind.notify(b.bind2);
@@ -202,7 +202,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should notify properties manual (lazySignal=true)", {
+			it("bindx should notify properties manual (lazySignal=true)", function () {
 				b.str = "3";
 				var f = "1";
 				var t = "2";
@@ -217,7 +217,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should notify properties manual (lazySignal=false)", {
+			it("bindx should notify properties manual (lazySignal=false)", function () {
 				b.str2 = "3";
 				var f = "1";
 				var t = "2";
@@ -232,7 +232,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should unbind all properties listeners (lazySignal=true)", {
+			it("bindx should unbind all properties listeners (lazySignal=true)", function () {
 				bind(b.str, function (from, to) callNum++);
 				bind(b.str, function (from, to) callNum++);
 				
@@ -242,7 +242,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all properties listeners (lazySignal=false)", {
+			it("bindx should unbind all properties listeners (lazySignal=false)", function () {
 				bind(b.str2, function (from, to) callNum++);
 				bind(b.str2, function (from, to) callNum++);
 				
@@ -252,7 +252,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", {
+			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", function () {
 				bind(b.str, function (_, _) callNum++); // create binding signal
 				bind(b.str2, function (_, _) callNum++);
 				bind(b.bind, function () callNum++);
@@ -273,7 +273,7 @@ class BaseTest extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all bindings (signal expected) (lazySignal=true/false)", {
+			it("bindx should unbind all bindings (signal expected) (lazySignal=true/false)", function () {
 				Bind.unbindAll(b);
 				
 				try {
@@ -288,10 +288,39 @@ class BaseTest extends BuddySuite {
 				
 				true.should.be(true);
 			});
+			
+			it("bindx should resolve typedefs", function () {
+				var a:TypeBindable1 = new TypeBindable1();
+				Bind.bind(a.str, function (_, _) {
+					callNum ++;
+				});
+				
+				a.str = "123";
+				callNum.should.be(1);
+			});
+			
+			it("bindx should resolve parametric types", function () {
+				var b = new GenericBindable<TypeBindable1>();
+				b.a = new TypeBindable1();
+				Bind.bind(b.a.str, function (_, _) {
+					callNum ++;
+				});
+				
+				b.a.str = "123";
+				callNum.should.be(1);
+			});
 		});
 	}
 }
 
+//@:generic
+class GenericBindable<A> {
+	public var a:A;
+	
+	public function new() {}
+}
+
+typedef TypeBindable1 = Bindable1;
 
 class Bindable1 implements bindx.IBindable {
 

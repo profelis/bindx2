@@ -10,17 +10,17 @@ class SignalTest extends BuddySuite {
     public function new() {
         super();
     
-        describe("Using BindSignal", {
+        describe("Using BindSignal", function () {
             
             var fs:FieldSignal<String>;
             var callNum:Int;
             
-            before({
+            before(function () {
                 fs = new FieldSignal<String>();
                 callNum = 0;
             });
             
-            it("signal listeners should listen signal", {
+            it("signal listeners should listen signal", function () {
                 var f = "1";
                 var t = "2";
                 function listener(from:String, to:String) {
@@ -49,7 +49,7 @@ class SignalTest extends BuddySuite {
                 callNum.should.be(3);
             });
             
-            it("signal should correct add/remove listeners", {
+            it("signal should correct add/remove listeners", function () {
                 function listener2(_, _) {
                     callNum ++;
                 }
@@ -79,7 +79,7 @@ class SignalTest extends BuddySuite {
                 callNum.should.be(4); // all listeners removed
             });
             
-            it("signal should correct dispatch in listener", {
+            it("signal should correct dispatch in listener", function () {
                 function listener(_, _) {
                     fs.remove(listener);
                     fs.dispatch(null, null);
@@ -97,17 +97,17 @@ class SignalTest extends BuddySuite {
             });
         });
 
-        describe("Using MethodSignal", {
+        describe("Using MethodSignal", function () {
             
             var ms:MethodSignal;
             var callNum:Int;
             
-            before({
+            before(function () {
                 ms = new MethodSignal();
                 callNum = 0;
             });
             
-            it("signal listeners should listen signal", {
+            it("signal listeners should listen signal", function () {
                 function listener() {
                     callNum ++;
                     ms.remove(listener);

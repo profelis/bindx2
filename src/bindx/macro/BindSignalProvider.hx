@@ -6,9 +6,8 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 import bindx.BindSignal;
 
-using bindx.macro.MetaUtils;
+using bindx.macro.MacroUtils;
 using haxe.macro.Tools;
-using Lambda;
 
 class BindSignalProvider implements IBindingSignalProvider {
 
@@ -113,7 +112,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalName,
                 kind: FProp("get", "never", type, null),
                 pos: field.pos,
-                access: [APrivate],
+                access: [APrivate]
             });
 
             var getter = macro function foo() {

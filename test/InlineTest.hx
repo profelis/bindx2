@@ -12,13 +12,13 @@ class InlineTest extends BuddySuite {
     
     public function new() {
         
-        describe("Using @:bindable(inlineSetter=true/false, inlineSignalGetter=true/false)", {
+        describe("Using @:bindable(inlineSetter=true/false, inlineSignalGetter=true/false)", function () {
             
             var b:BindableInline;
             var cd:Classdef;
             var foundFields:Int;
                 
-            before({
+            before(function () {
                 foundFields = 0;
                 b = new BindableInline();
                 var rttiData:String = untyped BindableInline.__rtti;
@@ -26,7 +26,7 @@ class InlineTest extends BuddySuite {
                 cd = switch (rtti) { case TClassdecl(c): c; case _: null; };
             });
                 
-            it("bindx should generate inline setter", {
+            it("bindx should generate inline setter", function () {
                 for (c in cd.fields) {
                     switch (c.name) {
                         case "set_str":
@@ -41,7 +41,7 @@ class InlineTest extends BuddySuite {
                 foundFields.should.be(2);
             });
             
-            it("bindx should generate inline signal getter", {
+            it("bindx should generate inline signal getter", function () {
                 for (c in cd.fields) {
                     switch (c.name) {
                         case "get_str3Changed":

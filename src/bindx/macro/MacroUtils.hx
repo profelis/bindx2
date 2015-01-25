@@ -1,11 +1,11 @@
 package bindx.macro;
 
+#if macro
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
-using Lambda;
 
 class MetaUtils {
 
@@ -62,7 +62,7 @@ class ClassTypeMetaUtils {
     	return bindableMeta(classType) != null;
 }
 
-class ExprMetaUtils {
+class ExprUtils {
 	static public inline function isTrue(expr:Expr):Bool
 		return expr.expr.match(EConst(CIdent("true")));
 
@@ -78,4 +78,13 @@ class ExprMetaUtils {
 
 	static public inline function isNullOrTrue(expr:Expr):Bool
 		return expr == null || isTrue(expr);
+        
+    static public inline function getComplexType(expr:Expr):ComplexType {
+        return deepTypeof(expr).toComplexType();
+    }
+    
+    static public inline function deepTypeof(expr:Expr):haxe.macro.Type {
+        return Context.typeof(expr).follow();
+    }
 }
+#end

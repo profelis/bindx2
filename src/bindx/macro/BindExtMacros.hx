@@ -11,6 +11,7 @@ import bindx.macro.BindMacros;
 
 using Lambda;
 using StringTools;
+using bindx.macro.MacroUtils;
 using haxe.macro.Tools;
 
 private typedef FieldExpr = {
@@ -31,7 +32,7 @@ private typedef Chain = {
 @:access(bindx.macro.BindMacros)
 class BindxExtMacro {
     
-    static inline function internalBindChain(expr:Expr, listener:Expr):Expr {
+    static inline function bindChain(expr:Expr, listener:Expr):Expr {
         var zeroListener = listenerName(0, "");
         var chain = null;
         try { chain = warnPrepareChain(expr); } catch (e:GenericError) e.contextError();
@@ -42,18 +43,8 @@ class BindxExtMacro {
         return res;
     }
     
-    static inline function unwrapFormatedString(expr:Expr):Expr {
-        return if (MacroStringTools.isFormatExpr(expr)) {
-            var f = switch (expr.expr) {
-                case EConst(CString(s)): s;
-                case _: null;
-            }
-            if (f != null) MacroStringTools.formatString(f, expr.pos) else expr;
-        } else expr;
-    }
-    
-    static function internalBindExpr(expr:Expr, listener:Expr):Expr {
-        var type = Context.typeof(expr).toComplexType();
+    static function bindExpr(expr:Expr, listener:Expr):Expr {
+        var type = expr.getComplexType();
         var listenerNameExpr = macro listener;
         var fieldListenerName = "fieldListener";
         var fieldListenerNameExpr = macro $i{fieldListenerName};
@@ -96,7 +87,7 @@ class BindxExtMacro {
                     if (!binded.exists(key)) {
                         var ecall = switch (c.expr.expr) {
                             case EField(e, field):
-                                var type = Context.typeof(e);
+                                var type = e.deepTypeof();
                                 var classRef = type.getClass();
                                 var field = classRef.findField(field);
                                 field.kind.match(FMethod(_));
@@ -246,6 +237,7 @@ class BindxExtMacro {
     inline static function listenerName(idx:Int, prefix) return '${prefix}listener$idx';
     
     static function prepareChain(fields:Array<FieldExpr>, expr:Expr, prefix = ""):Chain {
+        var bsp = BindableMacros.bindingSignalProvider;
         var res:Chain = { init:[], bind:[], unbind:[], expr:null };
         
         var prevListenerName = listenerName(0, prefix);
@@ -259,7 +251,7 @@ class BindxExtMacro {
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
-            var type = Context.typeof(field.e).toComplexType();
+            var type = field.e.getComplexType();
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
@@ -283,7 +275,7 @@ class BindxExtMacro {
             }
 
             if (prev.bindable) {
-                var unbind = BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
+                var unbind = bsp.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
                 
                 res.bind.push(macro var $value:Null<$type> = null );
                 res.unbind.push(macro if ($valueExpr != null) { $unbind; $valueExpr = null; } );
@@ -291,7 +283,7 @@ class BindxExtMacro {
                 fieldListenerBody.push(macro if ($valueExpr != null) $unbind );
                 fieldListenerBody.push(macro $valueExpr = n );
                 fieldListenerBody.push(macro if (n != null)
-                    $ { BindableMacros.bindingSignalProvider.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
+                    $ { bsp.getClassFieldBindExpr(macro n, prev.field, prevListenerNameExpr ) });
             }
             var callPrevArgs = prev.params != null ? [] : [macro o != null ? o.$fieldName : null, macro n != null ? n.$fieldName : null];
             var callPrev = macro $prevListenerNameExpr($a { callPrevArgs } );
@@ -299,8 +291,7 @@ class BindxExtMacro {
         
             if (field.params != null) {
                 fieldListenerBody.unshift(macro $i { oldValue } = n);
-                fieldListenerBody.unshift(macro try { n = $e; } catch (e:Dynamic) { });
-                fieldListenerBody.unshift(macro var n:Null < $type > = null);
+                fieldListenerBody.unshift(macro var n:Null<$type> = try { $e; } catch (_:Dynamic) { null; });
                 fieldListenerBody.unshift(macro var o:Null<$type> = $i{oldValue} );
                 
                 res.init.push(macro var $oldValue:Null<$type> = null);
@@ -310,7 +301,7 @@ class BindxExtMacro {
             } else {
                 if (prev.bindable) {
                     fieldListenerBody.unshift(macro if (o != null) 
-                        ${BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
+                        ${bsp.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
                     );
                 }
                 fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void $b { fieldListenerBody };
@@ -322,15 +313,15 @@ class BindxExtMacro {
             prevListenerNameExpr = listenerNameExpr;
         }
         
-        if (zeroListener == null || zeroListener.f.bindable == false)
+        if (zeroListener == null || !zeroListener.f.bindable)
             throw new GenericError('${expr.toString()} is not bindable.', expr.pos);
             
         var zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")
             res.init.unshift(macro var $zeroName = $i{zeroName});
         
-        res.bind.push(BindableMacros.bindingSignalProvider.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
-        res.unbind.push(BindableMacros.bindingSignalProvider.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
+        res.bind.push(bsp.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
+        res.unbind.push(bsp.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
 
         if (zeroListener.f.params != null) {
             res.bind.push(macro ${zeroListener.l}());
@@ -339,6 +330,16 @@ class BindxExtMacro {
             res.bind.push(macro $ { zeroListener.l } (null, $ { zeroListener.f.e } .$fieldName ));
         }
         return res;
+    }
+    
+    static inline function unwrapFormatedString(expr:Expr):Expr {
+        return if (MacroStringTools.isFormatExpr(expr)) {
+            var f = switch (expr.expr) {
+                case EConst(CString(s)): s;
+                case _: null;
+            }
+            if (f != null) MacroStringTools.formatString(f, expr.pos) else expr;
+        } else expr;
     }
 }
 #end

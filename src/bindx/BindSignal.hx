@@ -82,7 +82,7 @@ class SignalTools {
         if (meta != null) for (m in std.Reflect.fields(meta)) {
             var data = std.Reflect.field(meta, m);
             if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
-                var signal:bindx.BindSignal.Signal<Dynamic> = cast Reflect.field(bindable, m);
+                var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
                 if (signal != null) {
                     signal.removeAll();
                     var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);

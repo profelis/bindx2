@@ -10,17 +10,17 @@ class MetaTest extends BuddySuite {
     
     public function new() {
         
-        describe("Using @bindable meta inheritance", {
+        describe("Using @bindable meta inheritance", function () {
             
             var b:BindableMeta;
             var callNum:Int;
             
-            before({
+            before(function () {
                 b = new BindableMeta();
                 callNum = 0;
             });
             
-            it("bindx inherit metadata bindable for public fields", {
+            it("bindx inherit metadata bindable for public fields", function () {
                 b.str = "a";
                 Bind.bind(b.str, function(_, _) callNum++);
                 
@@ -28,7 +28,7 @@ class MetaTest extends BuddySuite {
                 callNum.should.be(1);
             });
             
-            it("bindx inherit metadata bindable for public fields", {
+            it("bindx inherit metadata bindable for public fields", function () {
                 b.str2 = "a";
                 Bind.bind(b.str2, function(_, _) callNum++);
                 
@@ -36,7 +36,7 @@ class MetaTest extends BuddySuite {
                 callNum.should.be(1);
             });
             
-            it("bindx inherit metadata params", {
+            it("bindx inherit metadata params", function () {
                 @:privateAccess b.strChanged.should.not.be(null);
                 @:privateAccess b.str2Changed.should.not.be(null);
             });

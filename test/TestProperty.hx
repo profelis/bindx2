@@ -10,17 +10,17 @@ class TestProperty extends BuddySuite {
 	public function new() {
 		super();
 		
-		describe("Using bind properties", {
+		describe("Using bind properties", function () {
 			
 			var b:BindableProperty;
             var callNum:Int;
 			
-			before({
+			before(function () {
 				b = new BindableProperty();
                 callNum = 0;
 			});
 			
-			it("bindx should bind/unbind fields (lazySignal=true)", {
+			it("bindx should bind/unbind fields (lazySignal=true)", function () {
 				var strFrom = b.str = "a";
 				var callNum2 = 0;
 				
@@ -50,7 +50,7 @@ class TestProperty extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind fields (lazySignal=false)", {
+			it("bindx should bind/unbind fields (lazySignal=false)", function () {
 				var strFrom = b.str2 = "a";
 				var callNum2 = 0;
 				
@@ -80,7 +80,7 @@ class TestProperty extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind 'null' values (lazySignal=true)", {
+			it("bindx should bind/unbind 'null' values (lazySignal=true)", function () {
 				var strFrom = b.str = null;
 				var callNum2 = 0;
 				var listener = function (from:String, to:String) {
@@ -108,7 +108,7 @@ class TestProperty extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind/unbind 'null' values (lazySignal=false)", {
+			it("bindx should bind/unbind 'null' values (lazySignal=false)", function () {
 				var strFrom = b.str2 = null;
 				var callNum2 = 0;
 				var listener = function (from:String, to:String) {
@@ -136,7 +136,7 @@ class TestProperty extends BuddySuite {
 				callNum2.should.be(1);
 			});
 			
-			it("bindx should bind 2 objects (lazySignal=true)", {
+			it("bindx should bind 2 objects (lazySignal=true)", function () {
 				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
@@ -156,7 +156,7 @@ class TestProperty extends BuddySuite {
 				s.should.be(prev);
 			});
 			
-			it("bindx should bind 2 objects (lazySignal=false)", {
+			it("bindx should bind 2 objects (lazySignal=false)", function () {
 				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
@@ -175,7 +175,7 @@ class TestProperty extends BuddySuite {
 				s.should.be(prev);
 			});
 			
-			it("bindx should notify properties manual (lazySignal=true)", {
+			it("bindx should notify properties manual (lazySignal=true)", function () {
 				b.str = "3";
 				var f = "1";
 				var t = "2";
@@ -190,7 +190,7 @@ class TestProperty extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should notify properties manual (lazySignal=false)", {
+			it("bindx should notify properties manual (lazySignal=false)", function () {
 				b.str2 = "3";
 				var f = "1";
 				var t = "2";
@@ -205,7 +205,7 @@ class TestProperty extends BuddySuite {
 				callNum.should.be(1);
 			});
 			
-			it("bindx should unbind all properties listeners (lazySignal=true)", {
+			it("bindx should unbind all properties listeners (lazySignal=true)", function () {
 				bind(b.str, function (from, to) callNum++);
 				bind(b.str, function (from, to) callNum++);
 				
@@ -215,7 +215,7 @@ class TestProperty extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all properties listeners (lazySignal=false)", {
+			it("bindx should unbind all properties listeners (lazySignal=false)", function () {
 				bind(b.str2, function (from, to) callNum++);
 				bind(b.str2, function (from, to) callNum++);
 				
@@ -225,7 +225,7 @@ class TestProperty extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", {
+			it("bindx should unbind all bindings (signal exists) (lazySignal=true/false)", function () {
 				bind(b.str, function (_, _) callNum++); // create binding signal
 				bind(b.str2, function (_, _) callNum++);
 				
@@ -242,7 +242,7 @@ class TestProperty extends BuddySuite {
 				callNum.should.be(0);
 			});
 			
-			it("bindx should unbind all bindings (signal expected) (lazySignal=true/false)", {
+			it("bindx should unbind all bindings (signal expected) (lazySignal=true/false)", function () {
 				Bind.unbindAll(b);
 				
 				try {

@@ -11,18 +11,18 @@ class ExprBindTest extends BuddySuite {
     
     public function new() {
         
-        describe("Using BindExt.expr", {
+        describe("Using BindExt.expr", function () {
             
             var callNum:Int;
             var from:String;
             var target:{a:String};
-            before({
+            before(function () {
                 target = {a:null};
                 from = null;
                 callNum = 0;
             });
             
-            it("BindExt.chain should bind simple expr", {
+            it("BindExt.chain should bind simple expr", function () {
                 var a = new BaseTest.Bindable1();
                 var b = new BaseTest.Bindable1();
                 a.str = "a1";
@@ -51,7 +51,7 @@ class ExprBindTest extends BuddySuite {
                 callNum.should.be(3);
             });
             
-            it("BindExt.chain should bind complex expresions", {
+            it("BindExt.chain should bind complex expresions", function () {
                 var a = new BaseTest.Bindable1();
                 var b = new BaseTest.Bindable1();
                 var c = new BaseTest.Bindable1();
