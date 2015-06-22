@@ -27,7 +27,7 @@ class InlineTest extends BuddySuite {
                 var rtti = new XmlParser().processElement(Xml.parse(rttiData).firstChild());
                 cd = switch (rtti) { case TClassdecl(c): c; case _: null; };
                 #else
-                cd = Rtti.getRtti(BindableInline);
+                cd = Rtti.hasRtti(BindableInline) ? Rtti.getRtti(BindableInline) : null;
                 #end
             });
                 
