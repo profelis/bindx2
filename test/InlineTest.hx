@@ -22,9 +22,13 @@ class InlineTest extends BuddySuite {
             before(function () {
                 foundFields = 0;
                 b = new BindableInline();
-                var rttiData:String = #if (haxe_ver<3.2) untyped BindableInline.__rtti #else  Rtti.getRtti(BindableInline) #end;
+                #if (haxe_ver<3.2)
+                var rttiData:String = untyped BindableInline.__rtti;
                 var rtti = new XmlParser().processElement(Xml.parse(rttiData).firstChild());
                 cd = switch (rtti) { case TClassdecl(c): c; case _: null; };
+                #else
+                cd = Rtti.getRtti(BindableInline);
+                #end
             });
                 
             it("bindx should generate inline setter", function () {
