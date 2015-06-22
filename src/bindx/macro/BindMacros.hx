@@ -65,17 +65,17 @@ class BindMacros {
                     error = new GenericError('\'${e.toString()}\' must be bindx.IBindable', e.pos);
                 }
                 
-                var field = classType.findField(field, null);
-                if (field == null) {
-                    throw new FatalError('\'${e.toString()}.${field.name}\' expected', field.pos);
+                var classField = classType.findField(field, null);
+                if (classField == null) {
+                    throw new FatalError('\'${type.toString()}.${field}\' expected', e.pos);
                     return null;
                 }
 
-                if (!field.hasBindableMeta()) {
-                    error = new GenericError('\'${e.toString()}.${field.name}\' is not bindable', field.pos);
+                if (!classField.hasBindableMeta()) {
+                    error = new GenericError('\'${type.toString()}.${classField.name}\' is not bindable', classField.pos);
                 }
 
-                return {e:e, field:field, error:error};
+                return {e:e, field:classField, error:error};
 
             case EConst(CIdent(_)):
                 return {e:f, field:null, error:new GenericError('Can\'t bind \'${f.toString()}\'. Please use \'this.${f.toString()}\'', f.pos)};
