@@ -1,5 +1,6 @@
 package ;
 
+import haxe.rtti.Rtti;
 import bindx.Bind;
 import bindx.IBindable;
 import buddy.BuddySuite;
@@ -21,7 +22,7 @@ class InlineTest extends BuddySuite {
             before(function () {
                 foundFields = 0;
                 b = new BindableInline();
-                var rttiData:String = untyped BindableInline.__rtti;
+                var rttiData:String = #if (haxe_ver<3.2) untyped BindableInline.__rtti #else  Rtti.getRtti(BindableInline) #end;
                 var rtti = new XmlParser().processElement(Xml.parse(rttiData).firstChild());
                 cd = switch (rtti) { case TClassdecl(c): c; case _: null; };
             });
