@@ -5,8 +5,8 @@
     "tags": ["bind", "binding", "bindings", "cross"],
     "description": "Powerful and fast macro-based data binding engine inspired by Flex Bindings with easy-to-use syntax.",
     "classPath": "src",
-    "version": "2.3.0",
-    "releasenote": "typedefs support",
+    "version": "2.4.0",
+    "releasenote": "bindAll method",
     "contributors": [
         "deep"
     ]

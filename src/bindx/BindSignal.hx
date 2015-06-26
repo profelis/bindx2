@@ -118,12 +118,10 @@ class SignalTools {
             var data = std.Reflect.field(meta, m);
             if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
                 var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
-                trace(signal);
                 if (signal == null && force) {
                     var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
                     var lazy:Bool = args[0];
                     if (lazy) signal = cast std.Reflect.getProperty(bindable, m.substr(1));
-                    trace(signal);
                 }
                 if (signal != null) signals.push(signal);
             }
