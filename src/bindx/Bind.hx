@@ -25,4 +25,8 @@ class Bind {
     @:noUsing macro static public function unbindAll(object:ExprOf<IBindable>):Expr {
         return BindMacros.unbindAll(object);
     }
+
+	@:noUsing macro static public function bindAll(object:ExprOf<IBindable>, listener:Expr, force:Bool = true):Expr {
+		return BindMacros.bindAll(object, listener, force);
+	}
 }

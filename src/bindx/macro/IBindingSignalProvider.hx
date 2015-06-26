@@ -13,4 +13,5 @@ interface IBindingSignalProvider {
     function getClassFieldUnbindExpr(expr:Expr, field:ClassField, listener:Expr):Expr;
     function getClassFieldChangedExpr(expr:Expr, field:ClassField, oldValue:Expr, newValue:Expr):Expr;
     function getUnbindAllExpr(expr:ExprOf<IBindable>, type:Type):Expr;
+    function getBindAllExpr(expr:ExprOf<IBindable>, type:Type, listener:Expr, force:Bool = true):Expr;
 }

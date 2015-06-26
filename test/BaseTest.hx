@@ -288,6 +288,46 @@ class BaseTest extends BuddySuite {
 				
 				true.should.be(true);
 			});
+
+			it("bindx should bind all bindings (force mode)", function () {
+				var unbind = Bind.bindAll(b, function () callNum ++, true);
+
+				b.str = "123";
+				b.str2 = "123";
+				Bind.notify(b.bind);
+				Bind.notify(b.bind2);
+
+				callNum.should.be(4);
+
+				unbind();
+
+				b.str = "234";
+				b.str2 = "234";
+				Bind.notify(b.bind);
+				Bind.notify(b.bind2);
+
+				callNum.should.be(4);
+			});
+
+			it("bindx should bind all bindings (simple mode)", function () {
+				var unbind = Bind.bindAll(b, function () callNum ++, false);
+
+				b.str = "123";
+				b.str2 = "123";
+				Bind.notify(b.bind);
+				Bind.notify(b.bind2);
+
+				callNum.should.be(2); // ignore lazy signals
+
+				unbind();
+
+				b.str = "234";
+				b.str2 = "234";
+				Bind.notify(b.bind);
+				Bind.notify(b.bind2);
+
+				callNum.should.be(2);
+			});
 			
 			it("bindx should resolve typedefs", function () {
 				var a:TypeBindable1 = new TypeBindable1();

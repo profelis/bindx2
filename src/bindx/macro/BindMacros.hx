@@ -38,6 +38,14 @@ class BindMacros {
         return BindableMacros.bindingSignalProvider.getUnbindAllExpr(object, type);
     }
 
+    static inline function bindAll(object:ExprOf<IBindable>, listener:Expr, force:Bool = true):Expr {
+        var type = object.deepTypeof();
+        if (!isBindable(type.getClass())) {
+            Context.error('\'${object.toString()}\' must be bindx.IBindable', object.pos);
+        }
+        return BindableMacros.bindingSignalProvider.getBindAllExpr(object, type, listener, force);
+    }
+
     static inline function warnCheckField(field:Expr):{e:Expr, field:ClassField} {
         var res = null;
         try {

@@ -92,4 +92,42 @@ class SignalTools {
             }
         }
     }
+
+    static public function bindAll(bindable:bindx.IBindable, callback:Void -> Void, force = true):Void -> Void {
+        var listenField = function (_, _) callback();
+        var listenMethod = callback;
+
+        var signals = getSignals(bindable, force);
+        for (signal in signals) {
+            if (Std.is(signal, FieldSignal)) signal.add(listenField);
+            else signal.add(listenMethod);
+        }
+
+        return function () {
+            for (signal in signals) {
+                if (Std.is(signal, FieldSignal)) signal.remove(listenField);
+                else signal.remove(listenMethod);
+            }
+        }
+    }
+
+    static function getSignals(bindable:bindx.IBindable, force = true):Array<bindx.BindSignal.Signal<Dynamic>> {
+        var signals = [];
+        var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
+        if (meta != null) for (m in std.Reflect.fields(meta)) {
+            var data = std.Reflect.field(meta, m);
+            if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
+                var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
+                trace(signal);
+                if (signal == null && force) {
+                    var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
+                    var lazy:Bool = args[0];
+                    if (lazy) signal = cast std.Reflect.getProperty(bindable, m.substr(1));
+                    trace(signal);
+                }
+                if (signal != null) signals.push(signal);
+            }
+        }
+        return signals;
+    }
 }
