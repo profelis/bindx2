@@ -111,3 +111,4 @@ Log level    | Description
 ## Additional
 
 `-D bindx_compareMethods` enables methods comparing with `Reflect.compareMethods` (enabled for Neko by default)
+- BindExt and `this`. Use `this.bindableA.bindableB` to listen changes of `bindableA`, not only `bindableB`
