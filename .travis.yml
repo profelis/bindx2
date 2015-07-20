@@ -11,7 +11,7 @@ env:
     - secure: "YOUR_ENCRYPTED_SAUCE_USERNAME" # if you want to use SauceLabs
   matrix:
     - TARGET=neko 
-    - TARGET=neko HAXE_VER=3.1.3
+    - TARGET=neko HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=interp
     - TARGET=macro
@@ -23,25 +23,26 @@ env:
       # optional: FILENAME
       # optional: SAUCE_BROWSERS: specify the .json file that specifies the SauceLabs browsers to test. Defaults to `.sauce-browsers.json`
     - TARGET=php
-    - TARGET=php HAXE_VER=3.1.3
+    - TARGET=php HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=cpp
-    - TARGET=cpp HAXE_VER=3.1.3
+    - TARGET=cpp HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=swf
-    - TARGET=swf HAXE_VER=3.1.3
+    - TARGET=swf HAXE_VER=3.2.0
       # optional: FILENAME
     # - TARGET=as3 
       # optional: FILENAME
     - TARGET=java
-    - TARGET=java HAXE_VER=3.1.3
+    - TARGET=java HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=cs
-    - TARGET=cs HAXE_VER=3.1.3
+    - TARGET=cs HAXE_VER=3.2.0
       # optional: FILENAME
 #    - TARGET=swf8
       # optional: FILENAME
     - TARGET=python
+    - TARGET=python HAXE_VER=3.2.0
       # optional: FILENAME
       # optional: PYTHONCMD
     
