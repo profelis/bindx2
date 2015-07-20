@@ -11,8 +11,6 @@ using haxe.macro.Tools;
 
 class BindSignalProvider implements IBindingSignalProvider {
 
-    static inline var SIGNAL_POSTFIX = "Changed";
-
     /**
      * default value: true
      */
@@ -24,7 +22,7 @@ class BindSignalProvider implements IBindingSignalProvider {
     
     public function new() {}
 
-    @:extern static inline function signalName(fieldName:String):String return fieldName + SIGNAL_POSTFIX;
+    @:extern static inline function signalName(fieldName:String):String return fieldName + SignalTools.SIGNAL_POSTFIX;
     @:extern static inline function signalGetterName(fieldName:String):String return "get_" + signalName(fieldName);
     @:extern static inline function signalPrivateName(fieldName:String):String return "_" + signalName(fieldName);
 
@@ -98,7 +96,8 @@ class BindSignalProvider implements IBindingSignalProvider {
     }
 
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>):Void {
-        var signalName = signalName(field.name);
+        var fieldName = field.name;
+        var signalName = signalName(fieldName);
         var meta = field.bindableMeta();
         var inlineSignalGetter = meta.findParam(INLINE_SIGNAL_GETTER);
 
@@ -108,7 +107,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 name: signalPrivateName,
                 kind: FVar(type, null),
                 pos: field.pos,
-                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro true] } ],
+                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro $v{fieldName}, macro true] } ],
                 access: [APrivate]
             });
 
@@ -142,7 +141,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 kind: FProp("default", "null", type, builder),
                 pos: field.pos,
                 access: [APrivate],
-                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro false] } ]
+                meta: [ { name:SignalTools.BIND_SIGNAL_META, pos:field.pos, params: [macro $v{fieldName}, macro false] } ]
             });
         }
     }

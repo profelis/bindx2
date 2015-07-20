@@ -76,6 +76,8 @@ class Signal<T> {
 
 class SignalTools {
     static public inline var BIND_SIGNAL_META = "BindSignal";
+
+    static public inline var SIGNAL_POSTFIX = "Changed";
     
     static public function unbindAll(bindable:bindx.IBindable):Void {
         var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
@@ -86,44 +88,55 @@ class SignalTools {
                 if (signal != null) {
                     signal.removeAll();
                     var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
-                    var lazy:Bool = args[0];
+                    var lazy:Bool = args[1];
                     if (lazy) std.Reflect.setField(bindable, m, null);
                 }
             }
         }
     }
 
-    static public function bindAll(bindable:bindx.IBindable, callback:Void -> Void, force = true):Void -> Void {
-        var listenField = function (_, _) callback();
-        var listenMethod = callback;
+    static public function bindAll(bindable:bindx.IBindable, callback:String -> Void, force = true):Void -> Void {
+        var listeners = new Map<bindx.BindSignal.Signal<Dynamic>, Dynamic>();
 
         var signals = getSignals(bindable, force);
-        for (signal in signals) {
-            if (Std.is(signal, FieldSignal)) signal.add(listenField);
-            else signal.add(listenMethod);
+        for (name in signals.keys()) {
+            var signal = signals.get(name);
+            if (std.Std.is(signal, FieldSignal)) {
+                var listener = function (_, _) callback(name);
+                listeners.set(signal, listener);
+                signal.add(listener);
+            } else {
+                var listener = function () callback(name);
+                listeners.set(signal, listener);
+                signal.add(listener);
+            }
         }
 
         return function () {
-            for (signal in signals) {
-                if (Std.is(signal, FieldSignal)) signal.remove(listenField);
-                else signal.remove(listenMethod);
+            for (signal in listeners.keys()) {
+                var listener = listeners.get(signal);
+                if (Std.is(signal, FieldSignal)) signal.remove(listener);
+                else signal.remove(listener);
             }
         }
     }
 
-    static function getSignals(bindable:bindx.IBindable, force = true):Array<bindx.BindSignal.Signal<Dynamic>> {
-        var signals = [];
+    static function getSignals(bindable:bindx.IBindable, force = true):Map<String, bindx.BindSignal.Signal<Dynamic>> {
+        var signals = new Map<String, bindx.BindSignal.Signal<Dynamic>>();
         var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
         if (meta != null) for (m in std.Reflect.fields(meta)) {
             var data = std.Reflect.field(meta, m);
             if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
+                var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
                 var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
                 if (signal == null && force) {
-                    var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
-                    var lazy:Bool = args[0];
+                    var lazy:Bool = args[1];
                     if (lazy) signal = cast std.Reflect.getProperty(bindable, m.substr(1));
                 }
-                if (signal != null) signals.push(signal);
+                if (signal != null) {
+                    var name = args[0];
+                    signals.set(name, signal);
+                }
             }
         }
         return signals;

@@ -290,11 +290,16 @@ class BaseTest extends BuddySuite {
 			});
 
 			it("bindx should bind all bindings (force mode)", function () {
-				var unbind = Bind.bindAll(b, function () callNum ++, true);
+				var fieldName = "";
+				var unbind = Bind.bindAll(b, function (name) { name.should.be(fieldName); callNum ++; }, true);
 
+				fieldName = "str";
 				b.str = "123";
+				fieldName = "str2";
 				b.str2 = "123";
+				fieldName = "bind";
 				Bind.notify(b.bind);
+				fieldName = "bind2";
 				Bind.notify(b.bind2);
 
 				callNum.should.be(4);
@@ -310,11 +315,14 @@ class BaseTest extends BuddySuite {
 			});
 
 			it("bindx should bind all bindings (simple mode)", function () {
-				var unbind = Bind.bindAll(b, function () callNum ++, false);
+				var fieldName = "";
+				var unbind = Bind.bindAll(b, function (name) { name.should.be(fieldName); callNum ++; }, false);
 
 				b.str = "123";
+				fieldName = "str2";
 				b.str2 = "123";
 				Bind.notify(b.bind);
+				fieldName = "bind2";
 				Bind.notify(b.bind2);
 
 				callNum.should.be(2); // ignore lazy signals
