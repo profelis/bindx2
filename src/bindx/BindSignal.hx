@@ -102,17 +102,13 @@ class SignalTools {
         for (name in signals.keys()) {
             var signal = signals.get(name);
             if (std.Std.is(signal, FieldSignal)) {
-                (function () {
-                    var listener = function (_, _) callback(name);
-                    listeners.set(signal, listener);
-                    signal.add(listener);
-                })();
+                var listener = function (_, _) callback(name);
+                listeners.set(signal, listener);
+                signal.add(listener);
             } else {
-                (function () {
-                    var listener = function () callback(name);
-                    listeners.set(signal, listener);
-                    signal.add(listener);
-                })();
+                var listener = function () callback(name);
+                listeners.set(signal, listener);
+                signal.add(listener);
             }
         }
 
