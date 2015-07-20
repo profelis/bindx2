@@ -1,5 +1,16 @@
 package ;
 
-import buddy.Buddy;
+import buddy.BuddySuite;
+import buddy.SuitesRunner;
 
-class Tests implements Buddy<[BaseTest, InheritanceTest, InlineTest, MetaTest, SignalTest, TestProperty, ChainBindTest, ExprBindTest]> {}
+@:build(buddy.GenerateMain.withSuites([
+    new BaseTest(),
+    new InheritanceTest(),
+    new InlineTest(),
+    new MetaTest(),
+    new SignalTest(),
+    new TestProperty(),
+    new ChainBindTest(),
+    new ExprBindTest(),
+]))
+class Tests extends BuddySuite {}
