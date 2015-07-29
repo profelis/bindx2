@@ -318,7 +318,7 @@ class BindxExtMacro {
             
         var zeroName = zeroListener.f.e.toString();
         if (zeroName != "this")
-            res.init.unshift(macro var $zeroName = $i{zeroName});
+            res.init.unshift(macro var $zeroName = ${zeroListener.f.e});
         
         res.bind.push(bsp.getClassFieldBindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
         res.unbind.push(bsp.getClassFieldUnbindExpr(macro $i{zeroName}, zeroListener.f.field, zeroListener.l ));
