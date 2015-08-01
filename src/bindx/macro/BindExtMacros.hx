@@ -316,7 +316,7 @@ class BindxExtMacro {
         if (zeroListener == null || !zeroListener.f.bindable)
             throw new GenericError('${expr.toString()} is not bindable.', expr.pos);
             
-        var zeroName = zeroListener.f.e.toString();
+        var zeroName = zeroListener.f.e.toString().replace(".", "_");
         if (zeroName != "this")
             res.init.unshift(macro var $zeroName = ${zeroListener.f.e});
         
