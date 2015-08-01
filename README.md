@@ -56,8 +56,8 @@ function onHealthChange(from:Null<Float>, to:Null<Float>) {
 
 Method       | Description
 ------------ | -------------
-Bind.bind(expr, listener) | executes `listener` if property or method in `expr` was changed. If `expr` contains property, then `listener` accepts 2 arguments: old and new values. If `expr` contains method, `listener` accepts no arguments.
-Bind.bindTo(expr, toExpr) | Assign result of `expr` to `toExpr` (NB: if `expr` contains method, then this method will be executed without arguments!). Does NOT invoke `expr` automatically.
+Bind.bind(expr, listener) | executes `listener` if property or method in `expr` was changed. If `expr` contains property, then `listener` accepts 2 arguments: old and new values. If `expr` contains method, `listener` accepts no arguments. Use `Bind.unbind` for unbind
+Bind.bindTo(expr, toExpr) | Assign result of `expr` to `toExpr` (NB: if `expr` contains method, then this method will be executed without arguments!). Does NOT invoke `expr` automatically. Returns reference callback, which can be used to unbind.
 Bind.notify(expr, oldValue, newValue) | Manually execute notification about property or method changes (if `expr` is method, then `oldValue` and `newValue` are not required)
 Bind.unbind(expr, listener) | Unsubscribe provided `listener` from `expr` changes (NB: if `listener` is not specified, all listeners for binded to this `expr` will be unsubscribed)
 Bind.bindAll(obj:IBindable, listener, force) | Bind all properties and methods of `obj` (force mode instantiate all lazy signals). Return unbind callback
@@ -66,8 +66,8 @@ Bind.unbindAll(obj:IBindable) | `listener:String->Void` Unbind all properties an
 ## Extended API:
 
 Method       | Description
------------- | -------------
-BindExt.chain(chainExpr, listener) | Subscribe to sequence of invokations like `a.b.c(1).d..`, fires signal if any member of `chainExpr` was changed (automatically unsubscribes from old value and subscribes to new one). Methods can be specified with arguments. (NB: for the first time `listener` will be called automatically). `listener` behaves identicaly to `listener` in Bind.bind(). BindExt.chain() returns reference callback, which can be used to completely unbind `chainExpr`.
+------------ | -------------returns reference callback, which can be used to completely unbind
+BindExt.chain(chainExpr, listener) | Subscribe to sequence of invokations like `a.b.c(1).d..`, fires signal if any member of `chainExpr` was changed (automatically unsubscribes from old value and subscribes to new one). Methods can be specified with arguments. (NB: for the first time `listener` will be called automatically). `listener` behaves identicaly to `listener` in Bind.bind(). `BindExt.chain()`  `chainExpr`.
 BindExt.chainTo(chainExpr, toExpr) | Bind `chainExpr` to `toExpr`. (NB: for the first time binding is executed automatically). Returns a callback to unbind `chainExpr`.
 BindExt.expr(expr, listener) | Universal method. `expr` can be any valid Haxe expression. All `IBindable` instances and bindables properties will be found automatically. `listener` always accepts 2 arguments. Previous values automatically stored for methods. (NB: for the first time `listener` is called automatically). BindExt.expr() returns a callback to unbind `expr`.
 BindExt.exprTo(expr, toExpr) | Bind any valid `expr` to `toExpr`. (NB: for the first time `listener` is called automatically). Returns a callback to unbind `expr`.
