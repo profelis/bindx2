@@ -95,18 +95,18 @@ class SignalTools {
         }
     }
 
-    static public function bindAll(bindable:bindx.IBindable, callback:String -> Void, force = true):Void -> Void {
+    static public function bindAll(bindable:bindx.IBindable, callback:String -> Dynamic -> Dynamic -> Void, force = true):Void -> Void {
         var listeners = new Map<bindx.BindSignal.Signal<Dynamic>, Dynamic>();
 
         var signals = getSignals(bindable, force);
         for (name in signals.keys()) {
             var signal = signals.get(name);
             if (std.Std.is(signal, FieldSignal)) {
-                var listener = function (_, _) callback(name);
+                var listener = function (from:Dynamic, to:Dynamic) callback(name, from, to);
                 listeners.set(signal, listener);
                 signal.add(listener);
             } else {
-                var listener = function () callback(name);
+                var listener = function () callback(name, null, null);
                 listeners.set(signal, listener);
                 signal.add(listener);
             }

@@ -291,12 +291,25 @@ class BaseTest extends BuddySuite {
 
 			it("bindx should bind all bindings (force mode)", function () {
 				var fieldName = "";
-				var unbind = Bind.bindAll(b, function (name) { name.should.be(fieldName); callNum ++; }, true);
+				var fromValue = b.str = b.str2 = "1";
+				var unbind = Bind.bindAll(b, function (name, from:Dynamic, to:Dynamic) {
+					name.should.be(fieldName);
+					if (fromValue != null)
+					{
+						from.should.be(fromValue);
+						to.should.be(Reflect.getProperty(b, name));
+					} else {
+						from.should.be(null);
+						to.should.be(null);
+					}
+					callNum ++;
+				}, true);
 
 				fieldName = "str";
 				b.str = "123";
 				fieldName = "str2";
 				b.str2 = "123";
+				fromValue = null;
 				fieldName = "bind";
 				Bind.notify(b.bind);
 				fieldName = "bind2";
@@ -316,11 +329,24 @@ class BaseTest extends BuddySuite {
 
 			it("bindx should bind all bindings (simple mode)", function () {
 				var fieldName = "";
-				var unbind = Bind.bindAll(b, function (name) { name.should.be(fieldName); callNum ++; }, false);
+				var fromValue = b.str = b.str2 = "1";
+				var unbind = Bind.bindAll(b, function (name, from:Dynamic, to:Dynamic) {
+					name.should.be(fieldName);
+					if (fromValue != null)
+					{
+						from.should.be(fromValue);
+						to.should.be(Reflect.getProperty(b, name));
+					} else {
+						from.should.be(null);
+						to.should.be(null);
+					}
+					callNum ++;
+				}, false);
 
 				b.str = "123";
 				fieldName = "str2";
 				b.str2 = "123";
+				fromValue = null;
 				Bind.notify(b.bind);
 				fieldName = "bind2";
 				Bind.notify(b.bind2);

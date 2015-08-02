@@ -61,7 +61,7 @@ Bind.bindTo(expr, toExpr) | Assign result of `expr` to `toExpr` (NB: if `expr` c
 Bind.notify(expr, oldValue, newValue) | Manually execute notification about property or method changes (if `expr` is method, then `oldValue` and `newValue` are not required)
 Bind.unbind(expr, listener) | Unsubscribe provided `listener` from `expr` changes (NB: if `listener` is not specified, all listeners for binded to this `expr` will be unsubscribed)
 Bind.bindAll(obj:IBindable, listener, force) | Bind all properties and methods of `obj` (force mode instantiate all lazy signals). Return unbind callback
-Bind.unbindAll(obj:IBindable) | `listener:String->Void` Unbind all properties and methods of `obj` (NB: still can bind new listeners after that!)
+Bind.unbindAll(obj:IBindable) | `listener(name:String, oldValue:Dynamic, newValue:Dynamic):Void` Unbind all properties and methods of `obj` (NB: still can bind new listeners after that!)
 
 ## Extended API:
 
