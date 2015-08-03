@@ -66,7 +66,7 @@ Bind.unbindAll(obj:IBindable) | `listener(name:String, oldValue:Dynamic, newValu
 ## Extended API:
 
 Method       | Description
------------- | -------------returns reference callback, which can be used to completely unbind
+------------ | -------------
 BindExt.chain(chainExpr, listener) | Subscribe to sequence of invokations like `a.b.c(1).d..`, fires signal if any member of `chainExpr` was changed (automatically unsubscribes from old value and subscribes to new one). Methods can be specified with arguments. (NB: for the first time `listener` will be called automatically). `listener` behaves identicaly to `listener` in Bind.bind(). `BindExt.chain()`  `chainExpr`.
 BindExt.chainTo(chainExpr, toExpr) | Bind `chainExpr` to `toExpr`. (NB: for the first time binding is executed automatically). Returns a callback to unbind `chainExpr`.
 BindExt.expr(expr, listener) | Universal method. `expr` can be any valid Haxe expression. All `IBindable` instances and bindables properties will be found automatically. `listener` always accepts 2 arguments. Previous values automatically stored for methods. (NB: for the first time `listener` is called automatically). BindExt.expr() returns a callback to unbind `expr`.
