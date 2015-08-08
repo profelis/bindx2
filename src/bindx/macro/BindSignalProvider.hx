@@ -82,6 +82,8 @@ class BindSignalProvider implements IBindingSignalProvider {
                     Context.error("method notify doesn't require newValue", newValue.pos);
                 [];
             case FVar(_, _):
+                if (oldValue.isNullOrEmpty() && newValue.isNullOrEmpty())
+                    Context.error("method notify require oldValue and newValue", oldValue.pos);
                 [oldValue, newValue];
         }
         return dispatchSignal(expr, field.name, args, hasLazy(field.bindableMeta()));
