@@ -5,8 +5,8 @@
     "tags": ["bind", "binding", "bindings", "cross"],
     "description": "Powerful and fast macro-based data binding engine inspired by Flex Bindings with easy-to-use syntax.",
     "classPath": "src",
-    "version": "2.5.1",
-    "releasenote": "bindAll method dispatch old and new properties value",
+    "version": "2.5.2",
+    "releasenote": "check notify args",
     "contributors": [
         "deep"
     ]
