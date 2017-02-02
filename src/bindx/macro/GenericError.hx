@@ -7,6 +7,11 @@ import haxe.macro.Expr.Position;
     var ALL = 2;
     var INFO = 1;
     var LOW = 0;
+
+    @:op(a >= b) static function ge(a:WarnPriority, b:WarnPriority) return (a: Int) >= (b: Int);
+    @:op(a > b) static function g(a:WarnPriority, b:WarnPriority) return (a: Int) > (b: Int);
+    @:op(a < b) static function l(a:WarnPriority, b:WarnPriority) return (a: Int) < (b: Int);
+    @:op(a <= b) static function le(a:WarnPriority, b:WarnPriority) return (a: Int) <= (b: Int);
 }
 
 class Warn {
@@ -20,7 +25,7 @@ class Warn {
     }
     
     public static function w(msg:String, pos:Position, level:WarnPriority) {
-        if ((Warn.level : Int) >= (level : Int))
+        if (Warn.level >= level)
             Context.warning(msg, pos);
     }
 }
