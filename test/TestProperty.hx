@@ -14,8 +14,8 @@ class TestProperty extends BuddySuite {
 			
 			var b:BindableProperty;
             var callNum:Int;
-			
-			before(function () {
+
+			beforeEach(function () {
 				b = new BindableProperty();
                 callNum = 0;
 			});

@@ -15,7 +15,7 @@ class InheritanceTest extends BuddySuite {
             var bp:BindableParent;
             var callNum:Int;
             
-            before(function () {
+            beforeEach(function () {
                 b = new BindableChild();
                 bp = new BindableParent();
                 callNum = 0;

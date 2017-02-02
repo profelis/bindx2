@@ -16,7 +16,7 @@ class BaseTest extends BuddySuite {
 			var b:Bindable1;
 			var callNum:Int;
 
-			before(function () {
+			beforeEach(function () {
 				b = new Bindable1();
 				callNum = 0;
 			});

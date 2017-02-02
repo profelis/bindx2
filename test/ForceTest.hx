@@ -15,7 +15,7 @@ class ForceTest extends BuddySuite {
             var b:BindableForce;
             var callNum:Int;
             
-            before(function () {
+            beforeEach(function () {
                 b = new BindableForce();
                 callNum = 0;
             });

@@ -16,7 +16,7 @@ class ExprBindTest extends BuddySuite {
             var callNum:Int;
             var from:String;
             var target:{a:String};
-            before(function () {
+            beforeEach(function () {
                 target = {a:null};
                 from = null;
                 callNum = 0;

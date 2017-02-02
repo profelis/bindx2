@@ -1,6 +1,5 @@
 package ;
 
-import bindx.Bind;
 import bindx.IBindable;
 import buddy.BuddySuite;
 import haxe.rtti.CType;
@@ -18,7 +17,7 @@ class InlineTest extends BuddySuite {
             var cd:Classdef;
             var foundFields:Int;
                 
-            before(function () {
+            beforeEach(function () {
                 foundFields = 0;
                 b = new BindableInline();
                 #if (haxe_ver<3.2)

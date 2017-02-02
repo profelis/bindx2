@@ -14,8 +14,8 @@ class MetaTest extends BuddySuite {
             
             var b:BindableMeta;
             var callNum:Int;
-            
-            before(function () {
+
+            beforeEach(function () {
                 b = new BindableMeta();
                 callNum = 0;
             });

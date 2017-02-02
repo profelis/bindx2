@@ -1,5 +1,6 @@
 package ;
 
+import bindx.BindSignal.MethodSignal;
 import bindx.BindSignal;
 import buddy.*;
 
@@ -14,8 +15,8 @@ class SignalTest extends BuddySuite {
             
             var fs:FieldSignal<String>;
             var callNum:Int;
-            
-            before(function () {
+
+            beforeEach(function () {
                 fs = new FieldSignal<String>();
                 callNum = 0;
             });
@@ -101,8 +102,8 @@ class SignalTest extends BuddySuite {
             
             var ms:MethodSignal;
             var callNum:Int;
-            
-            before(function () {
+
+            beforeEach(function () {
                 ms = new MethodSignal();
                 callNum = 0;
             });

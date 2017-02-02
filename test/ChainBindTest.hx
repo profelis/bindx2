@@ -18,8 +18,8 @@ class ChainBindTest extends BuddySuite {
             var b:BindableChain;
             var callNum:Int;
             var target:{a:String};
-            
-            before(function () {
+
+            beforeEach(function () {
                 from = null;
                 val = "a";
                 b = new BindableChain(4);
