@@ -1,63 +1,29 @@
-# example travis.yml haxe configuration
-language: c # change this to objective-c to test on a mac machine
+sudo: required
+dist: trusty
 
-env:
-  global:
-    #- OS=mac # add this too to let the script know that the OS is a mac
-    # - ARCH=i686 # add this to run in 32-bit mode. See availability at README
-      # SAUCE_ACCESS_KEY
-    - secure: "YOUR_ENCRYPTED_SAUCE_ACCESS_KEY" # if you want to use SauceLabs
-      # SAUCE_USERNAME
-    - secure: "YOUR_ENCRYPTED_SAUCE_USERNAME" # if you want to use SauceLabs
-  matrix:
-    - TARGET=neko 
-    - TARGET=neko HAXE_VER=3.2.0
-      # optional: FILENAME
-    - TARGET=interp
-    - TARGET=macro
-      # optional: MACROFLAGS: specify the flags that are unique to building/running with --macro arguments
-    - TARGET=js TOOLCHAIN=default # target is tested by node.js
-      # optional: FILENAME
-      # optional: NODECMD: set the command to be run by nodejs
-    - TARGET=js TOOLCHAIN=browser # target is tested by browsers / phantomjs
-      # optional: FILENAME
-      # optional: SAUCE_BROWSERS: specify the .json file that specifies the SauceLabs browsers to test. Defaults to `.sauce-browsers.json`
-    - TARGET=php
-      # optional: FILENAME
-    - TARGET=cpp
-      # optional: FILENAME
-    - TARGET=swf
-      # optional: FILENAME
-    # - TARGET=as3 
-      # optional: FILENAME
-    - TARGET=java
-      # optional: FILENAME
-    - TARGET=cs
-      # optional: FILENAME
-#    - TARGET=swf8
-      # optional: FILENAME
-    - TARGET=python
-      # optional: FILENAME
-      # optional: PYTHONCMD
-    
+language: haxe
 
-matrix:
-  fast_finish: true
-  exclude:
-      # - env: HAXE_VER=3.1.3, TARGET=python
-  allow_failures:
-    - env: TARGET=js, TOOLCHAIN=default
+os:
+  - linux
+  - osx
 
-before_install: # clone travis-hx repo
-  - travis_retry git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git ~/travis-hx
+haxe:
+  - "3.4.0"
+  - development
 
-install: # setup the target
-  - ~/travis-hx/setup.sh
-  - travis_retry haxelib install buddy
+install:
+  - haxelib install travix
+  - haxelib run travix install
+  - git clone https://github.com/mustache/spec
 
 script:
-  - cd $TRAVIS_BUILD_DIR
-  # build the target. This will call haxe with the HXFLAGS and HXFLAGS_EXTRA environment variables
-  - HXFLAGS="-cp src -cp test -main Tests -lib buddy -D reporter=buddy.reporting.TravisHxReporter" ~/travis-hx/build.sh
-  # run the tests
-  - ~/travis-hx/runtests.sh $FILENAME # this will set the $FILENAME defined on the environment variable to run the tests
+  - haxelib run travix interp
+  - haxelib run travix neko
+  - haxelib run travix js
+  - haxelib run travix node
+  - haxelib run travix php
+  - haxelib run travix python
+  - haxelib run travix java
+  - haxelib run travix cs
+  - haxelib run travix cpp
+  - haxelib run travix flash
