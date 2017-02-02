@@ -23,26 +23,20 @@ env:
       # optional: FILENAME
       # optional: SAUCE_BROWSERS: specify the .json file that specifies the SauceLabs browsers to test. Defaults to `.sauce-browsers.json`
     - TARGET=php
-    - TARGET=php HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=cpp
-    - TARGET=cpp HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=swf
-    - TARGET=swf HAXE_VER=3.2.0
       # optional: FILENAME
     # - TARGET=as3 
       # optional: FILENAME
     - TARGET=java
-    - TARGET=java HAXE_VER=3.2.0
       # optional: FILENAME
     - TARGET=cs
-    - TARGET=cs HAXE_VER=3.2.0
       # optional: FILENAME
 #    - TARGET=swf8
       # optional: FILENAME
     - TARGET=python
-    - TARGET=python HAXE_VER=3.2.0
       # optional: FILENAME
       # optional: PYTHONCMD
     
@@ -50,9 +44,9 @@ env:
 matrix:
   fast_finish: true
   exclude:
-      - env: HAXE_VER=3.1.3, TARGET=python
+      # - env: HAXE_VER=3.1.3, TARGET=python
   allow_failures:
-    - env: SOME_ENV_HERE=some_opt
+    - env: TARGET=js, TOOLCHAIN=default
 
 before_install: # clone travis-hx repo
   - travis_retry git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git ~/travis-hx
