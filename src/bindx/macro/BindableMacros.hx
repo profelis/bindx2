@@ -22,7 +22,7 @@ class BindableMacros {
     /**
      * default value: false
      */
-    static public inline var FORCE = "force";/**
+    static public inline var FORCE = "force";
     /**
      * meta store bindable fields (interfaces only)
      */

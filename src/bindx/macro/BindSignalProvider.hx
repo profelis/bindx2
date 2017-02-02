@@ -90,11 +90,11 @@ class BindSignalProvider implements IBindingSignalProvider {
     }
     
     public function getUnbindAllExpr(expr:ExprOf<IBindable>, type:Type):Expr {
-        return macro bindx.BindSignal.SignalTools.unbindAll($expr);
+        return macro bindx.SignalTools.unbindAll($expr);
     }
 
     public function getBindAllExpr(expr:ExprOf<IBindable>, type:Type, listener:Expr, force:Bool = true):Expr {
-        return macro bindx.BindSignal.SignalTools.bindAll($expr, $listener, $v{force});
+        return macro bindx.SignalTools.bindAll($expr, $listener, $v{force});
     }
 
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>):Void {

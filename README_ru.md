@@ -110,5 +110,4 @@ Log level    | Description
 
 ## Дополнительно
 
-- `-D bindx_compareMethods` включает сравнение методов с помощью `Reflect.compareMethods` (включено для neko по умолчанию)
 - BindExt и `this`. Используйте `this.bindableA.bindableB` если необходимо слушать изменения `bindableA`, а не только `bindableB`
