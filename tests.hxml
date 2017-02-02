@@ -1,0 +1,4 @@
+-main Tests
+-cp src
+-cp test
+-lib buddy
