@@ -96,16 +96,15 @@ class BindMacros {
     static inline function isBindable(classType:ClassType):Bool {
         var check = [classType];
         var res = false;
-        while (check.length > 0 && !res) {
+        while (!res && check.length > 0) {
             var t = check.shift();
-            while (t != null) {
-                if (t.module == "bindx.IBindable" && t.name == "IBindable") {
-                    res = true;
-                    break;
+            while (!res && t != null) {
+                switch t {
+                    case {module: "bindx.IBindable", name: "IBindable"}: res = true;
+                    case _:
+                        for (it in t.interfaces) check.push(it.t.get());
+                        t = t.superClass != null ? t.superClass.t.get() : null;
                 }
-                for (it in t.interfaces)
-                    check.push(it.t.get());
-                t = t.superClass != null ? t.superClass.t.get() : null;
             }
         }
         return res;
