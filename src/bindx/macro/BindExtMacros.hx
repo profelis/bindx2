@@ -133,7 +133,7 @@ class BindxExtMacro {
             case _: 
                 macro if (!init) {
                     var v:Null < $type > = null;
-                    try { v = $expr; } catch (e:Dynamic) { };
+                    try { v = $expr; } catch (e:Dynamic) { trace(e); };
                     $i { zeroListener } ($i { zeroValue }, v);
                     $i { zeroValue } = v;
                 }; 
@@ -291,7 +291,7 @@ class BindxExtMacro {
         
             if (field.params != null) {
                 fieldListenerBody.unshift(macro $i { oldValue } = n);
-                fieldListenerBody.unshift(macro var n:Null<$type> = try { $e; } catch (_:Dynamic) { null; });
+                fieldListenerBody.unshift(macro var n:Null<$type> = try { $e; } catch (e:Dynamic) { trace(e); null; });
                 fieldListenerBody.unshift(macro var o:Null<$type> = $i{oldValue} );
                 
                 res.init.push(macro var $oldValue:Null<$type> = null);
