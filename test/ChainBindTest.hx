@@ -59,6 +59,8 @@ class ChainBindTest extends BuddySuite {
                 
                 target.a.should.be(val);
                 callNum.should.be(5);
+
+                unbind();
             });
             
             it("BindExt.chain should bind chain changes (null links)", function () {
@@ -82,6 +84,8 @@ class ChainBindTest extends BuddySuite {
                 b.c.c.d = val = "b";
                 target.a.should.be(val);
                 callNum.should.be(3);
+
+                unbind();
             });
             
             it("BindExt.chain should bind chain changes (0 gap)", function () {

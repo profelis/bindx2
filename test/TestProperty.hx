@@ -137,7 +137,6 @@ class TestProperty extends BuddySuite {
 			});
 			
 			it("bindx should bind 2 objects (lazySignal=true)", function () {
-				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
 				
@@ -157,7 +156,6 @@ class TestProperty extends BuddySuite {
 			});
 			
 			it("bindx should bind 2 objects (lazySignal=false)", function () {
-				var callNum2 = 0;
 				var target = {a:""};
 				var s = "";
 				
