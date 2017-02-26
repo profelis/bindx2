@@ -45,6 +45,7 @@ class BindxExtMacro {
     
     static function bindExpr(expr:Expr, listener:Expr):Expr {
         var type = expr.getComplexType();
+        var fixedType = fixComplexType(type);
         var listenerNameExpr = macro listener;
         var fieldListenerName = "fieldListener";
         var fieldListenerNameExpr = macro $i{fieldListenerName};
@@ -132,7 +133,7 @@ class BindxExtMacro {
             case macro : Void: macro if (!init) $i{zeroListener}();
             case _: 
                 macro if (!init) {
-                    var v:Null < $type > = null;
+                    var v:$fixedType = null;
                     try { v = $expr; } catch (e:Dynamic) { trace(e); };
                     $i { zeroListener } ($i { zeroValue }, v);
                     $i { zeroValue } = v;
@@ -141,7 +142,7 @@ class BindxExtMacro {
 
         var preInit = [
             (macro var init:Bool = true),
-            macro var $zeroValue:Null<$type> = null
+            macro var $zeroValue:$fixedType = null
         ];
         
         var postInit = [
@@ -239,7 +240,7 @@ class BindxExtMacro {
     static function prepareChain(fields:Array<FieldExpr>, expr:Expr, prefix = ""):Chain {
         var bsp = BindableMacros.bindingSignalProvider;
         var res:Chain = { init:[], bind:[], unbind:[], expr:null };
-        
+
         var prevListenerName = listenerName(0, prefix);
         var prevListenerNameExpr = macro $i { prevListenerName };
         var zeroListener = fields[0].bindable ? { f:fields[0], l:prevListenerNameExpr } : null;
@@ -251,7 +252,8 @@ class BindxExtMacro {
         while (++i < fields.length - 1) {
             var field = fields[i + 1];
             var prev = fields[i];
-            var type = field.e.getComplexType();
+            var type = prev.e.getComplexType();
+            var fixedType = fixComplexType(type);
             var listenerName = listenerName(i+1, prefix);
             var listenerNameExpr = macro $i { listenerName };
             
@@ -277,7 +279,7 @@ class BindxExtMacro {
             if (prev.bindable) {
                 var unbind = bsp.getClassFieldUnbindExpr(valueExpr, prev.field, prevListenerNameExpr );
                 
-                res.bind.push(macro var $value:Null<$type> = null );
+                res.bind.push(macro var $value:$fixedType = null );
                 res.unbind.push(macro if ($valueExpr != null) { $unbind; $valueExpr = null; } );
                 
                 fieldListenerBody.push(macro if ($valueExpr != null) $unbind );
@@ -291,10 +293,10 @@ class BindxExtMacro {
         
             if (field.params != null) {
                 fieldListenerBody.unshift(macro $i { oldValue } = n);
-                fieldListenerBody.unshift(macro var n:Null<$type> = try { $e; } catch (e:Dynamic) { trace(e); null; });
-                fieldListenerBody.unshift(macro var o:Null<$type> = $i{oldValue} );
-                
-                res.init.push(macro var $oldValue:Null<$type> = null);
+                fieldListenerBody.unshift(macro var n:$fixedType = try { $e; } catch (e:Dynamic) { trace(e); null; });
+                fieldListenerBody.unshift(macro var o:$fixedType = $i{oldValue} );
+
+                res.init.push(macro var $oldValue:$type = null);
                 res.unbind.push(macro $oldValueExpr = null);
                 
                 fieldListener = macro function $listenerName ():Void $b { fieldListenerBody };
@@ -304,9 +306,9 @@ class BindxExtMacro {
                         ${bsp.getClassFieldUnbindExpr(macro o, prev.field, prevListenerNameExpr )}
                     );
                 }
-                fieldListener = macro function $listenerName (o:Null<$type>, n:Null<$type>):Void $b { fieldListenerBody };
+                fieldListener = macro function $listenerName (o:$fixedType, n:$fixedType):Void $b { fieldListenerBody };
             }
-        
+
             res.bind.push(fieldListener);
             
             prevListenerName = listenerName;
@@ -340,6 +342,20 @@ class BindxExtMacro {
             }
             if (f != null) MacroStringTools.formatString(f, expr.pos) else expr;
         } else expr;
+    }
+
+    static inline function fixComplexType(type:ComplexType):ComplexType {
+        return macro : Null<$type>;
+        // TODO: null safety
+        // if (isPrimitiveType(type)) return macro : Null<$type>;
+        // return type;
+    }
+
+    static function isPrimitiveType (type:ComplexType):Bool {
+        return switch (type) {
+            case TPath({name:"StdTypes"}): true;
+            case _: false;
+        }
     }
 }
 #end
