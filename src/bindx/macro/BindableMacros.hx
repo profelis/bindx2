@@ -18,7 +18,8 @@ class BindableMacros {
     /**
      * default value: false
      */
-    static public inline var INLINE_SETTER = "inlineSetter";
+    static inline var INLINE_SETTER = "inlineSetter";
+    static inline var DEFAULT_INLINE_SETTER = #if (bindx_inline_setter > 0) true; #else false; #end
     /**
      * default value: false
      */
@@ -139,7 +140,7 @@ class BindableMacros {
     				return value;
     			};
                 var setterAccess = [APrivate];
-                if (inlineSetter.isNotNullAndTrue()) setterAccess.push(AInline);
+                if (DEFAULT_INLINE_SETTER ? inlineSetter.isNullOrTrue() : inlineSetter.isNotNullAndTrue()) setterAccess.push(AInline);
     			res.push({
     				name: setterName,
     				kind: FFun(switch (setter.expr) { case EFunction (_, func): func; case _: throw false; }),
