@@ -15,10 +15,12 @@ class BindSignalProvider implements IBindingSignalProvider {
      * default value: true
      */
     static inline var LAZY_SIGNAL = "lazySignal";
+    static inline var DEFAULT_LAZY_SIGNAL = #if (bindx_lazy_signal > 0) true; #else false; #end
     /**
      * default value: false
      */
     static inline var INLINE_SIGNAL_GETTER = "inlineSignalGetter";
+    static inline var DEFAULT_INLINE_SIGNAL_GETTER = #if (bindx_inline_signal_getter > 0) true; #else false; #end
     
     public function new() {}
 
@@ -126,7 +128,7 @@ class BindSignalProvider implements IBindingSignalProvider {
                 return $i{signalPrivateName};
             };
             var getterAccess = [APrivate];
-            if (inlineSignalGetter.isNotNullAndTrue()) getterAccess.push(AInline);
+            if (hasInlineSignalGetter(inlineSignalGetter)) getterAccess.push(AInline);
 
             res.push({
                 name: signalGetterName(field.name),
@@ -162,7 +164,11 @@ class BindSignalProvider implements IBindingSignalProvider {
             }
     }
 
+    @:extern inline function hasInlineSignalGetter(param:Expr):Bool {
+        return if (DEFAULT_INLINE_SIGNAL_GETTER) param.isNullOrTrue(); else param.isNotNullAndTrue();
+    }
+
     @:extern inline function hasLazy(meta:MetadataEntry):Bool {
-        return meta.findParam(LAZY_SIGNAL).isNullOrTrue();
+        return if (DEFAULT_LAZY_SIGNAL) meta.findParam(LAZY_SIGNAL).isNullOrTrue(); else meta.findParam(LAZY_SIGNAL).isNotNullAndTrue();
     }
 }
