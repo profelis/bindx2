@@ -36,6 +36,31 @@ class InheritanceTest extends BuddySuite {
                 bp.i = 2;
                 callNum.should.be(3);
             });
+
+            it("bindx should support class inheritance for bindAll", function () {
+                b.s = "a";
+                Bind.bindAll(b, function (_, _, _) callNum++, true);
+                b.s = "b";
+                callNum.should.be(1);
+                b.i = 1;
+                callNum.should.be(2);
+            });
+
+            it("bindx should support class inheritance for unbindAll", function () {
+                b.i = 1;
+                b.s = "a";
+                Bind.bind(b.i, function (_, _) callNum++);
+                Bind.bind(b.s, function (_, _) callNum++);
+
+                b.i = 2;
+                b.s = "b";
+                callNum.should.be(2);
+                Bind.unbindAll(b);
+
+                b.i = 3;
+                b.s = "c";
+                callNum.should.be(2);
+            });
         });
     }
 }

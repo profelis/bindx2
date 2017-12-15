@@ -12,18 +12,22 @@ class SignalTools {
      *  @param bindable - target object
      */
     static public function unbindAll(bindable:bindx.IBindable):Void {
-        var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
-        if (meta != null) for (m in std.Reflect.fields(meta)) {
-            var data = std.Reflect.field(meta, m);
-            if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
-                var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
-                if (signal != null) {
-                    signal.removeAll();
-                    var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
-                    var lazy:Bool = args[1];
-                    if (lazy) std.Reflect.setField(bindable, m, null);
+        var clazz:Class<Dynamic> = std.Type.getClass(bindable);
+        while (clazz != null) {
+            var meta = haxe.rtti.Meta.getFields(clazz);
+            if (meta != null) for (m in std.Reflect.fields(meta)) {
+                var data = std.Reflect.field(meta, m);
+                if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
+                    var signal:bindx.BindSignal.Signal<Dynamic> = cast std.Reflect.field(bindable, m);
+                    if (signal != null) {
+                        signal.removeAll();
+                        var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
+                        var lazy:Bool = args[1];
+                        if (lazy) std.Reflect.setField(bindable, m, null);
+                    }
                 }
             }
+            clazz = std.Type.getSuperClass(clazz);
         }
     }
 
@@ -68,19 +72,23 @@ class SignalTools {
      */
     static public function getSignals(bindable:bindx.IBindable, force = true):Map<String, bindx.BindSignal.Signal<Function>> {
         var signals = new Map<String, bindx.BindSignal.Signal<Function>>();
-        var meta = haxe.rtti.Meta.getFields(std.Type.getClass(bindable));
-        if (meta != null) for (m in std.Reflect.fields(meta)) {
-            var data = std.Reflect.field(meta, m);
-            if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
-                var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
-                var signal:bindx.BindSignal.Signal<Function> = cast std.Reflect.field(bindable, m);
-                if (signal == null && force) {
-                    var lazy:Bool = args[1];
-                    if (lazy) signal = cast std.Reflect.getProperty(bindable, m.substr(1));
+        var clazz:Class<Dynamic> = std.Type.getClass(bindable);
+        while (clazz != null) {
+            var meta = haxe.rtti.Meta.getFields(clazz);
+            if (meta != null) for (m in std.Reflect.fields(meta)) {
+                var data = std.Reflect.field(meta, m);
+                if (std.Reflect.hasField(data, BIND_SIGNAL_META)) {
+                    var args:Array<Dynamic> = std.Reflect.field(data, BIND_SIGNAL_META);
+                    var signal:bindx.BindSignal.Signal<Function> = cast std.Reflect.field(bindable, m);
+                    if (signal == null && force) {
+                        var lazy:Bool = args[1];
+                        if (lazy) signal = cast std.Reflect.getProperty(bindable, m.substr(1));
+                    }
+                    var name = args[0];
+                    signals.set(name, signal);
                 }
-                var name = args[0];
-                signals.set(name, signal);
             }
+            clazz = std.Type.getSuperClass(clazz);
         }
         return signals;
     }
