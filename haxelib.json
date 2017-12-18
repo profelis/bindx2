@@ -5,8 +5,8 @@
     "tags": ["bind", "binding", "bindings", "cross"],
     "description": "Powerful and fast macro-based data binding engine inspired by Flex Bindings with easy-to-use syntax.",
     "classPath": "src",
-    "version": "2.6.2",
-    "releasenote": "more options to setup library behaviour",
+    "version": "2.6.3",
+    "releasenote": "Fixed inheritance issue for bindAll and unbindAll",
     "contributors": [
         "deep"
     ]
