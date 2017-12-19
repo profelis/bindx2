@@ -1,0 +1,4 @@
+-main Main
+-D bindx_log=2
+-lib bindx2
+--interp
