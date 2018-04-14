@@ -38,7 +38,7 @@ class SignalTools {
      *  @param force = true - force instantiate all lazy signals
      *  @return Void -> Void
      */
-    static public function bindAll(bindable:bindx.IBindable, callback:String -> Dynamic -> Dynamic -> Void, force = true):Void -> Void {
+    static public function bindAll(bindable:bindx.IBindable, callback: bindx.IBindable -> String -> Dynamic -> Dynamic -> Void, force = true):Void -> Void {
         var listeners = new Map<bindx.BindSignal.Signal<Function>, Function>();
 
         var signals = getSignals(bindable, force);
@@ -46,11 +46,11 @@ class SignalTools {
             var signal = signals.get(name);
             if (signal == null) continue;
             if (std.Std.is(signal, bindx.BindSignal.FieldSignal)) {
-                var listener = function (from:Dynamic, to:Dynamic) callback(name, from, to);
+                var listener = function (from:Dynamic, to:Dynamic) callback(bindable, name, from, to);
                 listeners.set(signal, listener);
                 signal.add(listener);
             } else {
-                var listener = function () callback(name, null, null);
+                var listener = function () callback(bindable, name, null, null);
                 listeners.set(signal, listener);
                 signal.add(listener);
             }
