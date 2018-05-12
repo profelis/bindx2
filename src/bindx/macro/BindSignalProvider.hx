@@ -99,6 +99,10 @@ class BindSignalProvider implements IBindingSignalProvider {
         return macro bindx.SignalTools.bindAll($expr, $listener, $v{force});
     }
 
+    public function getBindAllWithOriginExpr(expr:ExprOf<IBindable>, type:Type, listener:Expr, force:Bool = true):Expr {
+        return macro bindx.SignalTools.bindAllWithOrigin($expr, $listener, $v{force});
+    }
+
     function generateSignal(field:Field, type:ComplexType, builder:Expr, res:Array<Field>):Void {
         var fieldName = field.name;
         var signalName = signalName(fieldName);

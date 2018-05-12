@@ -29,4 +29,8 @@ class Bind {
 	@:noUsing macro static public function bindAll(object:ExprOf<IBindable>, listener:Expr, force:Bool = true):Expr {
 		return BindMacros.bindAll(object, listener, force);
 	}
+
+	@:noUsing macro static public function bindAllWithOrigin(object:ExprOf<IBindable>, listener:Expr, force:Bool = true):Expr {
+		return BindMacros.bindAllWithOrigin(object, listener, force);
+	}
 }
