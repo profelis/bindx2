@@ -42,11 +42,12 @@ class BindableMacros {
         processed.push(tName);
 
         var classType = type.getClass();
-        
+        #if (haxe < "4.0.0")
         Context.onMacroContextReused(function () {
             processed = [];
             return true;
         });
+        #end
         
         if (bindingSignalProvider == null) {
             bindingSignalProvider = new bindx.macro.BindSignalProvider();
