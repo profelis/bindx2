@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial
 
 language: haxe
 
@@ -20,7 +20,7 @@ install:
 script:
   - haxelib run travix interp
   - haxelib run travix neko
-  - haxelib run travix js
+  - haxelib run travix run js
   - haxelib run travix node
   - haxelib run travix php
   - haxelib run travix python
