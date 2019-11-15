@@ -45,15 +45,11 @@ class SignalTools {
         for (name in signals.keys()) {
             var signal = signals.get(name);
             if (signal == null) continue;
-            if (std.Std.is(signal, bindx.BindSignal.FieldSignal)) {
-                var listener = function (from:Dynamic, to:Dynamic) callback(name, from, to);
-                listeners.set(signal, listener);
-                signal.add(listener);
-            } else {
-                var listener = function () callback(name, null, null);
-                listeners.set(signal, listener);
-                signal.add(listener);
-            }
+            var listener : Function = std.Std.is(signal, bindx.BindSignal.FieldSignal)
+                ? function (from:Dynamic, to:Dynamic) callback(name, from, to)
+                : function () callback(name, null, null);
+            listeners.set(signal, listener);
+            signal.add(listener);
         }
 
         return function () {
@@ -78,15 +74,11 @@ class SignalTools {
         for (name in signals.keys()) {
             var signal = signals.get(name);
             if (signal == null) continue;
-            if (std.Std.is(signal, bindx.BindSignal.FieldSignal)) {
-                var listener = function (from:Dynamic, to:Dynamic) callback(bindable, name, from, to);
-                listeners.set(signal, listener);
-                signal.add(listener);
-            } else {
-                var listener = function () callback(bindable, name, null, null);
-                listeners.set(signal, listener);
-                signal.add(listener);
-            }
+            var listener : Function = std.Std.is(signal, bindx.BindSignal.FieldSignal)
+                ? function (from:Dynamic, to:Dynamic) callback(bindable, name, from, to)
+                : function () callback(bindable, name, null, null);
+            listeners.set(signal, listener);
+            signal.add(listener);
         }
 
         return function () {
